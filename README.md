@@ -17,7 +17,7 @@ Extension hỗ trợ làm bài trên **CodePTIT** tiện lợi hơn: nộp bài 
 3.  Chọn **Load unpacked** và trỏ tới thư mục extension.
 
 ## Cấu hình (Configuration)
-Để hoạt động, bạn **CẦN** cấu hình Competitive Companion như sau:
+Nếu bạn muốn sử dụng Competitive Companion với codePTIT++, bạn **CẦN** cấu hình Competitive Companion như sau:
 
 1.  Mở **Extension options** của Competitive Companion.
 2.  Trong mục **Custom rules**, thêm:
