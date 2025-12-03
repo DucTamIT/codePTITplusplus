@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "codePTIT++",
+  "version": "0.1",
+  "description": "PTIT Code enhancement",
+  "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
+    "storage"
+  ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://code.ptit.edu.vn/student/question/*",
+        "https://code.ptit.edu.vn/beta/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ]
+    }
+  ]
+}

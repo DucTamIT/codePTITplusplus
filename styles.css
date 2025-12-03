@@ -1,0 +1,147 @@
+.code-editor-section {
+    margin-top: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.code-editor-textarea {
+    width: 100%;
+    min-height: 400px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font-size: 13px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    background: #FFFFFF;
+    color: #333;
+    resize: vertical;
+    line-height: 1.6;
+    box-sizing: border-box;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.code-editor-textarea:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.editor-buttons-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    align-items: center;
+}
+
+.editor-button {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    background: #ff4d4f;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-button:hover {
+    background: #ff7875;
+}
+
+.editor-button:active {
+    background: #d9363e;
+}
+
+.editor-button.secondary {
+    background: #f5f5f5;
+    border-color: #d9d9d9;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.editor-button.secondary:hover {
+    background: #ffffff;
+    border-color: #40a9ff;
+    color: #40a9ff;
+}
+
+.editor-button.primary {
+    background: #52c41a;
+    font-size: 14px;
+    padding: 8px 24px;
+}
+
+.editor-button.primary:hover {
+    background: #73d13d;
+}
+
+.editor-button.primary:active {
+    background: #389e0d;
+}
+
+.quick-submit-btn {
+    background: #1890ff;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background 0.2s;
+    margin-left: 10px;
+}
+
+.quick-submit-btn:hover {
+    background: #40a9ff;
+}
+
+.editor-stats {
+    font-size: 13px;
+    color: #8c8c8c;
+    margin-left: auto;
+}
+
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    z-index: 10000;
+    font-size: 14px;
+    line-height: 1.5;
+    animation: slideInRight 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    background: #fff;
+    border-left: 4px solid transparent;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-toast.success {
+    border-left-color: #52c41a;
+}
+
+.notification-toast.error {
+    border-left-color: #ff4d4f;
+}
+
+.notification-toast.warning {
+    border-left-color: #faad14;
+}
+
+.notification-toast.info {
+    border-left-color: #1890ff;
+}

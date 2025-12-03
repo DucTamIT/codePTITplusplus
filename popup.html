@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>codePTIT++ Settings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            width: 380px;
+            padding: 20px;
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        h3 {
+            margin: 0;
+            color: #1890ff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .section {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+            color: #34495e;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .radio-group label:hover {
+            background: #f0f7ff;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 10px;
+            accent-color: #1890ff;
+        }
+
+        .user-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .user-info h4 {
+            margin: 0 0 10px 0;
+            color: #1890ff;
+            font-size: 14px;
+        }
+
+        .user-info p {
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user-info strong {
+            color: #555;
+        }
+
+        .user-info a {
+            color: #1890ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+        }
+
+        button:hover {
+            background: #40a9ff;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #status {
+            margin-top: 10px;
+            text-align: center;
+            color: #27ae60;
+            font-weight: 500;
+            height: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h3>Cài đặt Extension <span style="font-size: 12px; color: #666; font-weight: normal;">v0.1</span></h3>
+    </div>
+
+    <div class="section">
+        <span class="label">Định dạng tên file</span>
+        <div class="radio-group">
+            <label><input type="radio" name="filenameFormat" value="id"> <span>ID (C01001)</span></label>
+            <label><input type="radio" name="filenameFormat" value="id_name"> <span>ID_Tên
+                    (C01001_Ten_Bai)</span></label>
+            <label><input type="radio" name="filenameFormat" value="name"> <span>Tên (Ten_Bai)</span></label>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">Xử lý khoảng trắng</span>
+        <div class="radio-group">
+            <label><input type="radio" name="spaceHandling" value="underscore"> <span>Thay bằng dấu gạch dưới
+                    (_)</span></label>
+            <label><input type="radio" name="spaceHandling" value="remove"> <span>Xóa bỏ</span></label>
+        </div>
+    </div>
+
+    <button id="saveBtn">Lưu Cài Đặt</button>
+    <div id="status"></div>
+
+    <div class="user-info" style="margin-top: 20px;">
+        <h4>Thông tin tác giả</h4>
+        <p><strong>Name:</strong> Nguyen Hoang Duc Tam</p>
+        <p><strong>Student ID:</strong> B25DCCN523</p>
+        <p><strong>Email:</strong> <a href="mailto:TamNHD.B25CN523@stu.ptit.edu.vn">TamNHD.B25CN523@stu.ptit.edu.vn</a>
+        </p>
+        <p><strong>Facebook:</strong> <a href="https://facebook.com/nguyenhoangductam"
+                target="_blank">nguyenhoangductam</a></p>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
