@@ -24,7 +24,7 @@ Extension hỗ trợ làm bài trên **CodePTIT** tiện lợi hơn: nộp bài 
 
 | Match URL | Parser |
 | :--- | :--- |
-| `^https://code\.ptit\.edu\.vn/(student/question|beta/problems)/.*` | `CodeforcesProblemParser` |
+| `^https://code\.ptit\.edu\.vn/(student/question\|beta/problems)/.*` | `CodeforcesProblemParser` |
 
 **Copy Regex:**
 ```regex
