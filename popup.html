@@ -140,21 +140,26 @@
     </div>
 
     <div class="section">
-        <span class="label">Định dạng tên file</span>
+        <span class="label">Tên file (File Name)</span>
         <div class="radio-group">
-            <label><input type="radio" name="filenameFormat" value="id"> <span>ID (C01001)</span></label>
-            <label><input type="radio" name="filenameFormat" value="id_name"> <span>ID_Tên
-                    (C01001_Ten_Bai)</span></label>
-            <label><input type="radio" name="filenameFormat" value="name"> <span>Tên (Ten_Bai)</span></label>
+            <label><input type="radio" name="nameFormat" value="name_ascii"> <span>Tên (TEN_BAI)</span></label>
+            <label><input type="radio" name="nameFormat" value="id_name_ascii"> <span>ID + Tên
+                    (C001_TEN_BAI)</span></label>
+            <label><input type="radio" name="nameFormat" value="id"> <span>ID (C001)</span></label>
+            <label><input type="radio" name="nameFormat" value="name_camel"> <span>Viết liền (TenBai)</span></label>
+            <label><input type="radio" name="nameFormat" value="id_name_camel"> <span>ID + Viết liền
+                    (C001_TenBai)</span></label>
         </div>
     </div>
 
     <div class="section">
-        <span class="label">Xử lý khoảng trắng</span>
+        <span class="label">Tên gửi IDE (Competitive Companion)</span>
         <div class="radio-group">
-            <label><input type="radio" name="spaceHandling" value="underscore"> <span>Thay bằng dấu gạch dưới
-                    (_)</span></label>
-            <label><input type="radio" name="spaceHandling" value="remove"> <span>Xóa bỏ</span></label>
+            <label><input type="radio" name="ccNameFormat" value="cc_id"> <span>ID (C001)</span></label>
+            <label><input type="radio" name="ccNameFormat" value="cc_id_name"> <span>ID - Tên gốc (C001 - TÊN
+                    BÀI)</span></label>
+            <label><input type="radio" name="ccNameFormat" value="cc_id_name_ascii"> <span>ID - Tên gốc (xoá dấu) (C001
+                    - TEN BAI)</span></label>
         </div>
     </div>
 
