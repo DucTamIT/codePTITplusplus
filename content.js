@@ -78,13 +78,13 @@
     }
 
     function sanitizeFilename(str) {
-        return str.replace(/[^a-zA-Z0-9_\-]/g, '');
+        // Blacklist invalid filename characters on Windows: < > : " / \ | ? *
+        return str.replace(/[<>:"/\\|?*]/g, '');
     }
 
     let SETTINGS = {
-        filenameFormat: 'id',
-        convertVietnamese: true,
-        spaceHandling: 'underscore'
+        nameFormat: 'id_name_ascii',
+        ccNameFormat: 'cc_id_name'
     };
 
     // Initialize settings from storage
@@ -111,30 +111,85 @@
         chrome.storage.local.set(settings);
     }
 
+    function toCamelCase(str) {
+        return str.toLowerCase()
+            .replace(/[^a-zA-Z0-9]+/g, ' ')
+            .trim()
+            .split(/\s+/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('');
+    }
+
     function generateFilename(id, title) {
         const settings = getSettings();
         let namePart = title;
+        const format = settings.nameFormat || 'id_name_ascii';
 
-        if (settings.convertVietnamese) {
-            namePart = removeVietnameseTones(namePart);
-        }
+        // Helper to process name part
+        const processName = (str, ascii, underscore, camel) => {
+            if (ascii) {
+                str = removeVietnameseTones(str);
+            }
+            if (camel) {
+                return toCamelCase(str);
+            }
+            // Uppercase for non-camel formats as requested
+            str = str.toUpperCase();
 
-        if (settings.spaceHandling === 'underscore') {
-            namePart = namePart.replace(/\s+/g, '_');
-        } else {
-            namePart = namePart.replace(/\s+/g, '');
-        }
-
-        namePart = sanitizeFilename(namePart);
+            if (underscore) {
+                str = str.replace(/\s+/g, '_');
+            }
+            // If not underscore (i.e. keep spaces), we still might want to trim or collapse multiple spaces
+            if (!underscore) {
+                str = str.replace(/\s+/g, ' ');
+            }
+            return sanitizeFilename(str);
+        };
 
         let filename = id;
-        if (settings.filenameFormat === 'name') {
-            filename = namePart;
-        } else if (settings.filenameFormat === 'id_name') {
-            filename = `${id}_${namePart}`;
+
+        switch (format) {
+            case 'name_ascii': // Tên (TEN_BAI)
+                filename = processName(namePart, true, true, false);
+                break;
+            case 'id_name_ascii': // ID + Tên (C001_TEN_BAI)
+                filename = `${id}_${processName(namePart, true, true, false)}`;
+                break;
+            case 'id': // ID (C001)
+                filename = id;
+                break;
+            case 'name_camel': // Viết liền (TenBai)
+                filename = processName(namePart, true, false, true);
+                break;
+            case 'id_name_camel': // ID + Viết liền (C001_TenBai)
+                filename = `${id}_${processName(namePart, true, false, true)}`;
+                break;
+            default:
+                filename = `${id}_${processName(namePart, true, true, false)}`;
         }
 
         return filename;
+    }
+
+    function generateCCTitle(id, title) {
+        const settings = getSettings();
+        const format = settings.ccNameFormat || 'cc_id_name';
+
+        // Strip ID if present in title to avoid duplication
+        if (id && title.includes(id)) {
+            title = title.replace(id, '').replace(/^[\s\-\:]+/, '');
+        }
+
+        switch (format) {
+            case 'cc_id':
+                return id;
+            case 'cc_id_name':
+                return `${id} - ${title}`;
+            case 'cc_id_name_ascii':
+                return `${id} - ${removeVietnameseTones(title)}`;
+            default:
+                return `${id} - ${title}`;
+        }
     }
 
     // --- Core Logic ---
@@ -156,8 +211,16 @@
             // Try to find title from DOM
             const titleElem = document.querySelector('.submit__nav span a.link--red') || document.querySelector('.body-header h2');
             if (titleElem) {
+                // Clone and remove button to get clean text
+                const clone = titleElem.cloneNode(true);
+                const buttons = clone.querySelectorAll('.copy-title-btn, button');
+                buttons.forEach(btn => btn.remove());
+
+                let rawTitle = clone.textContent.trim();
+                // Fallback: Remove "Copy tên file" text if it somehow remains
+                rawTitle = rawTitle.replace('Copy tên file', '').trim();
+
                 // Remove ID from title if present (e.g. "C01001 - Title")
-                let rawTitle = titleElem.textContent.trim();
                 if (rawTitle.includes(id)) {
                     rawTitle = rawTitle.replace(id, '').replace(/^[\s\-\:]+/, '');
                 }
@@ -328,19 +391,22 @@
             </div>
             
             <div class="section">
-                <span class="label">Định dạng tên file</span>
+                <span class="label">Tên file (File Name)</span>
                 <div>
-                    <label><input type="radio" name="filenameFormat" value="id" ${settings.filenameFormat === 'id' ? 'checked' : ''}> <span>ID (C01001)</span></label>
-                    <label><input type="radio" name="filenameFormat" value="id_name" ${settings.filenameFormat === 'id_name' ? 'checked' : ''}> <span>ID_Tên (C01001_Ten_Bai)</span></label>
-                    <label><input type="radio" name="filenameFormat" value="name" ${settings.filenameFormat === 'name' ? 'checked' : ''}> <span>Tên (Ten_Bai)</span></label>
+                    <label><input type="radio" name="nameFormat" value="name_ascii" ${settings.nameFormat === 'name_ascii' ? 'checked' : ''}> <span>Tên (TEN_BAI)</span></label>
+                    <label><input type="radio" name="nameFormat" value="id_name_ascii" ${settings.nameFormat === 'id_name_ascii' ? 'checked' : ''}> <span>ID + Tên (C001_TEN_BAI)</span></label>
+                    <label><input type="radio" name="nameFormat" value="id" ${settings.nameFormat === 'id' ? 'checked' : ''}> <span>ID (C001)</span></label>
+                    <label><input type="radio" name="nameFormat" value="name_camel" ${settings.nameFormat === 'name_camel' ? 'checked' : ''}> <span>Viết liền (TenBai)</span></label>
+                    <label><input type="radio" name="nameFormat" value="id_name_camel" ${settings.nameFormat === 'id_name_camel' ? 'checked' : ''}> <span>ID + Viết liền (C001_TenBai)</span></label>
                 </div>
             </div>
 
             <div class="section">
-                <span class="label">Xử lý khoảng trắng</span>
+                <span class="label">Tên gửi IDE (Competitive Companion)</span>
                 <div>
-                    <label><input type="radio" name="spaceHandling" value="underscore" ${settings.spaceHandling === 'underscore' ? 'checked' : ''}> <span>Thay bằng dấu gạch dưới (_)</span></label>
-                    <label><input type="radio" name="spaceHandling" value="remove" ${settings.spaceHandling === 'remove' ? 'checked' : ''}> <span>Xóa bỏ</span></label>
+                    <label><input type="radio" name="ccNameFormat" value="cc_id" ${settings.ccNameFormat === 'cc_id' ? 'checked' : ''}> <span>ID (C001)</span></label>
+                    <label><input type="radio" name="ccNameFormat" value="cc_id_name" ${settings.ccNameFormat === 'cc_id_name' ? 'checked' : ''}> <span>ID - Tên gốc (C001 - TÊN BÀI)</span></label>
+                    <label><input type="radio" name="ccNameFormat" value="cc_id_name_ascii" ${settings.ccNameFormat === 'cc_id_name_ascii' ? 'checked' : ''}> <span>ID - Tên gốc (xoá dấu) (C001 - TEN BAI)</span></label>
                 </div>
             </div>
 
@@ -368,8 +434,8 @@
 
         const save = () => {
             const newSettings = {
-                filenameFormat: modal.querySelector('input[name="filenameFormat"]:checked').value,
-                spaceHandling: modal.querySelector('input[name="spaceHandling"]:checked').value
+                nameFormat: modal.querySelector('input[name="nameFormat"]:checked').value,
+                ccNameFormat: modal.querySelector('input[name="ccNameFormat"]:checked').value
             };
             saveSettings(newSettings);
             showNotification('Đã lưu cài đặt!', 'success');
@@ -384,11 +450,11 @@
             open: () => {
                 // Refresh values from storage in case changed elsewhere
                 const current = getSettings();
-                const formatRadio = modal.querySelector(`input[name="filenameFormat"][value="${current.filenameFormat}"]`);
+                const formatRadio = modal.querySelector(`input[name="nameFormat"][value="${current.nameFormat}"]`);
                 if (formatRadio) formatRadio.checked = true;
 
-                const spaceRadio = modal.querySelector(`input[name="spaceHandling"][value="${current.spaceHandling}"]`);
-                if (spaceRadio) spaceRadio.checked = true;
+                const ccRadio = modal.querySelector(`input[name="ccNameFormat"][value="${current.ccNameFormat}"]`);
+                if (ccRadio) ccRadio.checked = true;
 
                 modal.style.display = 'block';
                 overlay.style.display = 'block';
@@ -455,10 +521,13 @@
 
             // Clone and remove button to get clean text
             const clone = titleElem.cloneNode(true);
-            const btnInClone = clone.querySelector('.copy-title-btn');
-            if (btnInClone) btnInClone.remove();
+            // Remove all copy buttons and any other buttons
+            const buttons = clone.querySelectorAll('.copy-title-btn, button');
+            buttons.forEach(btn => btn.remove());
 
             let rawTitle = clone.textContent.trim();
+            // Fallback: Remove "Copy tên file" text if it somehow remains
+            rawTitle = rawTitle.replace('Copy tên file', '').trim();
 
             if (rawTitle.includes(id)) {
                 rawTitle = rawTitle.replace(id, '').replace(/^[\s\-\:]+/, '');
@@ -695,15 +764,16 @@
         const titleElem = document.querySelector('.submit__nav span a.link--red');
         if (!titleElem) return;
 
-        let title = titleElem.textContent.trim();
-        if (currentId && !title.includes(currentId)) {
-            title = `${currentId} - ${title}`;
-        }
-
-        // Use generated filename as title for Competitive Companion
-        // Remove extension if present in generateFilename logic (it returns filename without ext usually, but let's be safe)
-        // Actually generateFilename returns ID or ID_Name or Name.
-        title = generateFilename(currentId, title);
+        // Clone and remove button to get clean text
+        // Clone and remove button to get clean text
+        const clone = titleElem.cloneNode(true);
+        const buttons = clone.querySelectorAll('.copy-title-btn, button');
+        buttons.forEach(btn => btn.remove());
+        let title = clone.textContent.trim();
+        // Fallback: Remove "Copy tên file" text if it somehow remains
+        title = title.replace('Copy tên file', '').trim();
+        // Use generated title for Competitive Companion
+        title = generateCCTitle(currentId, title);
 
         // Extract limits
         const timeElem = document.querySelector('.submit__req p:nth-child(1) span');
@@ -881,13 +951,16 @@
 
         if (!titleElem || !problemContainer) return;
 
-        let title = titleElem.textContent.trim();
-        if (currentId && !title.includes(currentId)) {
-            title = `${currentId} - ${title}`;
-        }
-
-        // Use generated filename as title for Competitive Companion
-        title = generateFilename(currentId, title);
+        // Clone and remove button to get clean text
+        // Clone and remove button to get clean text
+        const clone = titleElem.cloneNode(true);
+        const buttons = clone.querySelectorAll('.copy-title-btn, button');
+        buttons.forEach(btn => btn.remove());
+        let title = clone.textContent.trim();
+        // Fallback: Remove "Copy tên file" text if it somehow remains
+        title = title.replace('Copy tên file', '').trim();
+        // Use generated title for Competitive Companion
+        title = generateCCTitle(currentId, title);
 
         // Extract limits
         const text = problemContainer.textContent;
