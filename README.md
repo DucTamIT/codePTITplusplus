@@ -66,8 +66,7 @@ Do extension chưa được đưa lên Chrome Web Store, bạn cần cài đặt
     ^https://code\.ptit\.edu\.vn/(student/question|beta/problems)/.*
     ```
 4.  Ở cột bên cạnh (**Parser**), chọn **CodeforcesProblemParser**.
-5.  Nhấn **Add** hoặc **Save**.
-
+   
 ## Đóng góp (Contribution)
 
 Extension được phát triển với mục đích học tập và chia sẻ. Nếu có lỗi hoặc ý tưởng mới, hãy tạo Pull Request hoặc liên hệ tác giả.
