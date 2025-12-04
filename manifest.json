@@ -1,13 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "codePTIT++",
-  "version": "0.1",
+  "name": "codePTIT",
+  "version": "0.3",
   "description": "PTIT Code enhancement",
   "permissions": [
     "clipboardRead",
     "clipboardWrite",
     "storage"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "codeptit@tamnhd.b25cn523",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ],
+        "optional": []
+      }
+    }
+  },
   "icons": {
     "16": "icon.png",
     "48": "icon.png",
