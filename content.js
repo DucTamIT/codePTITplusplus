@@ -856,6 +856,10 @@
     }
 
     function initBetaSite() {
+        // Always try to add the copy title button (it has its own internal checks)
+        // This ensures it gets added even if the title loads after the submit container
+        addCopyTitleButton();
+
         // Guard to prevent multiple injections
         if (document.querySelector('.quick-submit-btn')) return;
 
