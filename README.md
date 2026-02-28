@@ -12,6 +12,12 @@ Extension hỗ trợ làm bài trên **CodePTIT** tiện lợi hơn: nộp bài 
 *   **Competitive Companion**: Parse đề bài vào VS Code, CP Editor...
 
 ## Cài đặt (Installation)
+
+### Từ Store
+- **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+- **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+
+### Thủ công (Manual)
 1.  Tải và giải nén source code.
 2.  Truy cập `chrome://extensions/`, bật **Developer mode**.
 3.  Chọn **Load unpacked** và trỏ tới thư mục extension.

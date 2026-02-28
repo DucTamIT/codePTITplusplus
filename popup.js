@@ -1,26 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     const defaults = {
-        filenameFormat: 'name', // Default to name as per user preference seen in snippet
-        spaceHandling: 'underscore'
+        nameFormat: 'id_name_ascii',
+        ccNameFormat: 'cc_id_name'
     };
 
     // Load settings
     chrome.storage.local.get(defaults, (items) => {
-        const formatRadio = document.querySelector(`input[name="filenameFormat"][value="${items.filenameFormat}"]`);
+        const formatRadio = document.querySelector(`input[name="nameFormat"][value="${items.nameFormat}"]`);
         if (formatRadio) formatRadio.checked = true;
 
-        const spaceRadio = document.querySelector(`input[name="spaceHandling"][value="${items.spaceHandling}"]`);
-        if (spaceRadio) spaceRadio.checked = true;
+        const ccRadio = document.querySelector(`input[name="ccNameFormat"][value="${items.ccNameFormat}"]`);
+        if (ccRadio) ccRadio.checked = true;
     });
 
     // Save settings
     document.getElementById('saveBtn').addEventListener('click', () => {
-        const filenameFormat = document.querySelector('input[name="filenameFormat"]:checked').value;
-        const spaceHandling = document.querySelector('input[name="spaceHandling"]:checked').value;
+        const nameFormat = document.querySelector('input[name="nameFormat"]:checked').value;
+        const ccNameFormat = document.querySelector('input[name="ccNameFormat"]:checked').value;
 
         chrome.storage.local.set({
-            filenameFormat: filenameFormat,
-            spaceHandling: spaceHandling
+            nameFormat: nameFormat,
+            ccNameFormat: ccNameFormat
         }, () => {
             const status = document.getElementById('status');
             status.textContent = 'Đã lưu cài đặt!';
@@ -29,4 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000);
         });
     });
+
+    // Display version from manifest
+    const versionSpan = document.getElementById('ext-version');
+    if (versionSpan) {
+        versionSpan.textContent = 'v' + chrome.runtime.getManifest().version;
+    }
 });

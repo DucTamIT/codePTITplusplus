@@ -6,8 +6,11 @@
     const CONFIG = {
         filename: 'solution', // Generic filename
         betaUrlPart: '/beta/problems/',
-        oldUrlPart: '/student/question/'
+        oldUrlPart: '/student/question/',
+        oldSiteBase: '/student/'
     };
+
+    let lastProblemId = null; // Track for SPA navigation detection
 
     function isBetaSite() {
         return window.location.href.includes(CONFIG.betaUrlPart);
@@ -28,9 +31,14 @@
     }
 
     function showNotification(message, type = 'info') {
+        // Offset vertically to avoid stacking on top of each other
+        const existing = document.querySelectorAll('.notification-toast');
+        const offset = 20 + existing.length * 60;
+
         const notif = document.createElement('div');
         notif.className = `notification-toast ${type}`;
         notif.textContent = message;
+        notif.style.top = offset + 'px';
         document.body.appendChild(notif);
 
         setTimeout(() => {
@@ -43,7 +51,7 @@
     function getExtension(compilerText) {
         if (!compilerText) return '.c';
         const lang = compilerText.toLowerCase();
-        if (lang.includes('c++')) return '.cpp';
+        if (lang.includes('c++') || lang.includes('cpp')) return '.cpp';
         if (lang.includes('java')) return '.java';
         if (lang.includes('python')) return '.py';
         return '.c';
@@ -54,7 +62,83 @@
         return parts[parts.length - 1] || 'solution';
     }
 
-    // --- Helper Functions ---
+    function escapeHtml(text) {
+        if (!text) return text;
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- Shared DOM Helpers (DRY) ---
+
+    function getTitleElement() {
+        return document.querySelector('.submit__nav span a.link--red')
+            || document.querySelector('.body-header h2');
+    }
+
+    function getCleanTitle(titleElem, id) {
+        if (!titleElem) return 'Problem';
+        const clone = titleElem.cloneNode(true);
+        clone.querySelectorAll('.copy-title-btn, button').forEach(b => b.remove());
+        let title = clone.textContent.trim().replace('Copy tên file', '').trim();
+        if (id && title.includes(id)) {
+            title = title.replace(id, '').replace(/^[\s\-\:]+/, '');
+        }
+        return title;
+    }
+
+    function getLimits() {
+        if (isBetaSite()) {
+            const problemContainer = document.querySelector('.problem-container');
+            if (!problemContainer) return { timeLimit: '1.0 s', memoryLimitMb: '256 MB' };
+            const text = problemContainer.textContent;
+            const timeMatch = text.match(/Giới hạn thời gian:\s*(\d+)s/);
+            const memoryMatch = text.match(/Giới hạn bộ nhớ:\s*(\d+)Kb/);
+            const timeLimit = timeMatch ? timeMatch[1] + '.0 s' : '1.0 s';
+            const memoryLimitKb = memoryMatch ? parseInt(memoryMatch[1]) : 256000;
+            return { timeLimit, memoryLimitMb: Math.floor(memoryLimitKb / 1024) + ' MB' };
+        } else {
+            const timeElem = document.querySelector('.submit__req p:nth-child(1) span');
+            const memoryElem = document.querySelector('.submit__req p:nth-child(2) span');
+            let timeLimit = '1.0 s';
+            let memoryLimitMb = '256 MB';
+            if (timeElem) {
+                timeLimit = timeElem.textContent.trim().replace('s', '.0 s');
+            }
+            if (memoryElem) {
+                const memoryKb = parseInt(memoryElem.textContent.trim());
+                if (!isNaN(memoryKb)) {
+                    memoryLimitMb = Math.floor(memoryKb / 1024) + ' MB';
+                }
+            }
+            return { timeLimit, memoryLimitMb };
+        }
+    }
+
+    function getSampleTable() {
+        return document.querySelector('.MsoTableGrid')
+            || document.querySelector('.Table')
+            || document.querySelector('.TableGrid1')
+            || document.querySelector('.TableGrid2')
+            || document.querySelector('.TableGrid3')
+            || document.querySelector('.problem-container table')
+            || document.querySelector('.submit__des table');
+    }
+
+    function getCompilerTextFromDOM() {
+        // Old site
+        const compilerOld = document.getElementById('compiler');
+        if (compilerOld) return compilerOld.options[compilerOld.selectedIndex].text;
+        // Beta site
+        const compilerBeta = document.querySelector('.compiler-container .ant-select-selection-item');
+        if (compilerBeta) return compilerBeta.title || compilerBeta.textContent;
+        return '';
+    }
+
+    // --- Vietnamese Text Utilities ---
 
     function removeVietnameseTones(str) {
         str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
@@ -71,28 +155,25 @@
         str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
         str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
         str = str.replace(/Đ/g, "D");
-        // Some system encode vietnamese combining accent as individual utf-8 characters
-        // \u0300, \u0301, \u0303, \u0309, \u0323
-        str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // ̀ ́ ̃ ̉ ̣ 
+        str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
         return str;
     }
 
     function sanitizeFilename(str) {
-        // Blacklist invalid filename characters on Windows: < > : " / \ | ? *
         return str.replace(/[<>:"/\\|?*]/g, '');
     }
+
+    // --- Settings ---
 
     let SETTINGS = {
         nameFormat: 'id_name_ascii',
         ccNameFormat: 'cc_id_name'
     };
 
-    // Initialize settings from storage
     chrome.storage.local.get(SETTINGS, (items) => {
         SETTINGS = { ...SETTINGS, ...items };
     });
 
-    // Listen for changes (e.g. from popup)
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'local') {
             for (let key in changes) {
@@ -111,6 +192,8 @@
         chrome.storage.local.set(settings);
     }
 
+    // --- Filename Generation ---
+
     function toCamelCase(str) {
         return str.toLowerCase()
             .replace(/[^a-zA-Z0-9]+/g, ' ')
@@ -125,7 +208,6 @@
         let namePart = title;
         const format = settings.nameFormat || 'id_name_ascii';
 
-        // Helper to process name part
         const processName = (str, ascii, underscore, camel) => {
             if (ascii) {
                 str = removeVietnameseTones(str);
@@ -133,13 +215,10 @@
             if (camel) {
                 return toCamelCase(str);
             }
-            // Uppercase for non-camel formats as requested
             str = str.toUpperCase();
-
             if (underscore) {
                 str = str.replace(/\s+/g, '_');
             }
-            // If not underscore (i.e. keep spaces), we still might want to trim or collapse multiple spaces
             if (!underscore) {
                 str = str.replace(/\s+/g, ' ');
             }
@@ -149,19 +228,19 @@
         let filename = id;
 
         switch (format) {
-            case 'name_ascii': // Tên (TEN_BAI)
+            case 'name_ascii':
                 filename = processName(namePart, true, true, false);
                 break;
-            case 'id_name_ascii': // ID + Tên (C001_TEN_BAI)
+            case 'id_name_ascii':
                 filename = `${id}_${processName(namePart, true, true, false)}`;
                 break;
-            case 'id': // ID (C001)
+            case 'id':
                 filename = id;
                 break;
-            case 'name_camel': // Viết liền (TenBai)
+            case 'name_camel':
                 filename = processName(namePart, true, false, true);
                 break;
-            case 'id_name_camel': // ID + Viết liền (C001_TenBai)
+            case 'id_name_camel':
                 filename = `${id}_${processName(namePart, true, false, true)}`;
                 break;
             default:
@@ -175,7 +254,6 @@
         const settings = getSettings();
         const format = settings.ccNameFormat || 'cc_id_name';
 
-        // Strip ID if present in title to avoid duplication
         if (id && title.includes(id)) {
             title = title.replace(id, '').replace(/^[\s\-\:]+/, '');
         }
@@ -192,6 +270,7 @@
         }
     }
 
+
     // --- Core Logic ---
 
     async function handlePasteAndSubmit(fileInput, submitAction, getCompilerText) {
@@ -205,28 +284,8 @@
             const ext = getExtension(getCompilerText());
             const blob = new Blob([text], { type: 'text/plain' });
 
-            // Get ID and Title for filename
             const id = getProblemId();
-            let title = 'Problem';
-            // Try to find title from DOM
-            const titleElem = document.querySelector('.submit__nav span a.link--red') || document.querySelector('.body-header h2');
-            if (titleElem) {
-                // Clone and remove button to get clean text
-                const clone = titleElem.cloneNode(true);
-                const buttons = clone.querySelectorAll('.copy-title-btn, button');
-                buttons.forEach(btn => btn.remove());
-
-                let rawTitle = clone.textContent.trim();
-                // Fallback: Remove "Copy tên file" text if it somehow remains
-                rawTitle = rawTitle.replace('Copy tên file', '').trim();
-
-                // Remove ID from title if present (e.g. "C01001 - Title")
-                if (rawTitle.includes(id)) {
-                    rawTitle = rawTitle.replace(id, '').replace(/^[\s\-\:]+/, '');
-                }
-                title = rawTitle;
-            }
-
+            const title = getCleanTitle(getTitleElement(), id);
             const filename = generateFilename(id, title);
             const file = new File([blob], `${filename}${ext}`, { type: 'text/plain' });
 
@@ -234,12 +293,10 @@
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
 
-            // Dispatch change event for frameworks (Vue/React)
             fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 
             showNotification(`Đang nộp bài: ${filename}${ext}`, 'success');
 
-            // Small delay to ensure file is processed
             setTimeout(() => {
                 submitAction();
             }, 500);
@@ -251,7 +308,6 @@
     }
 
     function createSettingsUI() {
-        // Inject styles for the modal
         if (!document.getElementById('settings-modal-style')) {
             const style = document.createElement('style');
             style.id = 'settings-modal-style';
@@ -384,10 +440,11 @@
         `;
 
         const settings = getSettings();
+        const version = chrome.runtime.getManifest().version;
 
         modal.innerHTML = `
             <div class="header">
-                <h3>Cài đặt Extension <span style="font-size: 12px; color: #666; font-weight: normal;">v0.1</span></h3>
+                <h3>Cài đặt Extension <span style="font-size: 12px; color: #666; font-weight: normal;">v${version}</span></h3>
             </div>
             
             <div class="section">
@@ -448,7 +505,6 @@
 
         return {
             open: () => {
-                // Refresh values from storage in case changed elsewhere
                 const current = getSettings();
                 const formatRadio = modal.querySelector(`input[name="nameFormat"][value="${current.nameFormat}"]`);
                 if (formatRadio) formatRadio.checked = true;
@@ -464,17 +520,10 @@
 
     function addCopyTitleButton() {
         const id = getProblemId();
-        let titleElem = document.querySelector('.submit__nav span a.link--red'); // Old site
-        let isBeta = false;
-
-        if (!titleElem) {
-            titleElem = document.querySelector('.body-header h2'); // Beta site
-            isBeta = true;
-        }
+        const titleElem = getTitleElement();
 
         if (!titleElem || titleElem.querySelector('.copy-title-btn')) return;
 
-        // Inject styles for the button if not already present
         if (!document.getElementById('copy-title-btn-style')) {
             const style = document.createElement('style');
             style.id = 'copy-title-btn-style';
@@ -517,36 +566,8 @@
             e.preventDefault();
             e.stopPropagation();
 
-            let title = 'Problem';
-
-            // Clone and remove button to get clean text
-            const clone = titleElem.cloneNode(true);
-            // Remove all copy buttons and any other buttons
-            const buttons = clone.querySelectorAll('.copy-title-btn, button');
-            buttons.forEach(btn => btn.remove());
-
-            let rawTitle = clone.textContent.trim();
-            // Fallback: Remove "Copy tên file" text if it somehow remains
-            rawTitle = rawTitle.replace('Copy tên file', '').trim();
-
-            if (rawTitle.includes(id)) {
-                rawTitle = rawTitle.replace(id, '').replace(/^[\s\-\:]+/, '');
-            }
-            title = rawTitle;
-
-            // We need to get the extension. Since this button is outside the editor context,
-            // we might need to find the compiler select again or default to .cpp if not found.
-            // For simplicity, let's try to find the compiler select.
-            let ext = '.cpp';
-            const compilerOld = document.getElementById('compiler');
-            const compilerBeta = document.querySelector('.compiler-container .ant-select-selection-item');
-
-            if (compilerOld) {
-                ext = getExtension(compilerOld.options[compilerOld.selectedIndex].text);
-            } else if (compilerBeta) {
-                ext = getExtension(compilerBeta.title || compilerBeta.textContent);
-            }
-
+            const title = getCleanTitle(titleElem, id);
+            const ext = getExtension(getCompilerTextFromDOM());
             const filename = generateFilename(id, title) + ext;
 
             try {
@@ -583,9 +604,11 @@
                     <span id="charCount">0</span> ký tự
                 </span>
             </div>
+            <div class="shortcut-hints" style="font-size: 11px; color: #aaa; margin-top: 6px; text-align: right;">
+                Ctrl+Enter: Nộp bài · Ctrl+Shift+V: Dán \u0026 Nộp · Ctrl+Shift+C: Copy tên file
+            </div>
         `;
 
-        // Add some flex styles for the button row
         const style = document.createElement('style');
         style.textContent = `
             .editor-buttons-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
@@ -599,13 +622,11 @@
         const textarea = editorSection.querySelector('.code-editor-textarea');
         const pasteBtn = editorSection.querySelector('#pasteBtn');
         const clearBtn = editorSection.querySelector('#clearBtn');
+
         const settingsBtn = editorSection.querySelector('#settingsBtn');
         const submitCodeBtn = editorSection.querySelector('#submitCodeBtn');
         const lineCount = editorSection.querySelector('#lineCount');
         const charCount = editorSection.querySelector('#charCount');
-
-        // Auto focus - Disabled to prevent auto-scroll
-        // setTimeout(() => textarea.focus(), 100);
 
         function updateStats() {
             const text = textarea.value;
@@ -655,9 +676,11 @@
             textarea.focus();
         };
 
+
+
         settingsBtn.onclick = () => settingsUI.open();
 
-        submitCodeBtn.onclick = () => {
+        submitCodeBtn.onclick = async () => {
             const code = textarea.value.trim();
             if (!code) {
                 showNotification('Chưa có code để nộp', 'warning');
@@ -667,7 +690,6 @@
             const ext = getExtension(getCompilerText());
             const blob = new Blob([code], { type: 'text/plain' });
 
-            // Get ID for filename (User requested no specific name needed for submission)
             const id = getProblemId();
             const filename = id;
             const file = new File([blob], `${filename}${ext}`, { type: 'text/plain' });
@@ -677,271 +699,17 @@
             fileInput.files = dataTransfer.files;
             fileInput.dispatchEvent(new Event('change', { bubbles: true }));
 
+
+
             showNotification(`Đang nộp bài...`, 'success');
             setTimeout(() => submitAction(), 500);
         };
     }
 
-    // --- Site Specific Implementations ---
-
-    function customizeOldSiteUI() {
-        // Remove the big "THỬ NGHIỆM PHIÊN BẢN MỚI" banner
-        const banner = document.querySelector('.username.container-fluid');
-        if (banner) {
-            banner.style.display = 'none';
-        }
-
-        // Add link to the navbar
-        const navMenu = document.querySelector('.nav__menu');
-        if (navMenu) {
-            const betaItem = document.createElement('div');
-            betaItem.className = 'nav__menu__item';
-            betaItem.innerHTML = `
-                <a href="/beta">
-                    Beta
-                </a>
-            `;
-            navMenu.appendChild(betaItem);
-        }
-    }
-
-    function initOldSite() {
-        customizeOldSiteUI();
-
-        waitForElement('.submit__pad', (submitPad) => {
-            const submitBtn = submitPad.querySelector('.submit__pad__btn');
-            const fileInput = document.getElementById('fileInput');
-            const form = document.querySelector('.submit__pad form');
-
-            if (!submitBtn || !fileInput || !form) return;
-
-            // Paste and Submit Button
-            const quickSubmitBtn = document.createElement('button');
-            quickSubmitBtn.type = 'button';
-            quickSubmitBtn.className = 'submit__pad__btn quick-submit-btn';
-            quickSubmitBtn.textContent = 'Dán và Nộp bài';
-
-            const getCompilerText = () => {
-                const compiler = document.getElementById('compiler');
-                return compiler ? compiler.options[compiler.selectedIndex].text : '';
-            };
-
-            const submitAction = () => form.submit();
-
-            quickSubmitBtn.onclick = () => handlePasteAndSubmit(fileInput, submitAction, getCompilerText);
-            submitBtn.parentNode.appendChild(quickSubmitBtn);
-
-            // Editor
-            createEditor(submitPad.parentNode, submitBtn, fileInput, getCompilerText, submitAction);
-
-            // Move editor after submit pad
-            const editor = document.querySelector('.code-editor-section');
-            if (editor) {
-                submitPad.parentNode.insertBefore(editor, submitPad.nextSibling);
-            }
-
-            // Inject Competitive Companion Data (Codeforces format)
-            injectCompetitiveCompanionDataOld();
-
-            // Add Copy Title Button
-            addCopyTitleButton();
-
-            // Add Copy Buttons to Tables
-            addCopyButtons();
-        });
-    }
-
-    function injectCompetitiveCompanionDataOld() {
-        const urlParts = window.location.href.split('/');
-        const currentId = urlParts[urlParts.length - 1];
-        const existingContainer = document.getElementById('competitive-companion-data');
-
-        if (existingContainer) {
-            if (existingContainer.dataset.problemId === currentId) return;
-            existingContainer.remove();
-        }
-
-        const titleElem = document.querySelector('.submit__nav span a.link--red');
-        if (!titleElem) return;
-
-        // Clone and remove button to get clean text
-        // Clone and remove button to get clean text
-        const clone = titleElem.cloneNode(true);
-        const buttons = clone.querySelectorAll('.copy-title-btn, button');
-        buttons.forEach(btn => btn.remove());
-        let title = clone.textContent.trim();
-        // Fallback: Remove "Copy tên file" text if it somehow remains
-        title = title.replace('Copy tên file', '').trim();
-        // Use generated title for Competitive Companion
-        title = generateCCTitle(currentId, title);
-
-        // Extract limits
-        const timeElem = document.querySelector('.submit__req p:nth-child(1) span');
-        const memoryElem = document.querySelector('.submit__req p:nth-child(2) span');
-
-        let timeLimit = '1.0 s';
-        let memoryLimitMb = '256 MB';
-
-        if (timeElem) {
-            const timeText = timeElem.textContent.trim();
-            // Example: "2s" -> "2.0 s"
-            timeLimit = timeText.replace('s', '.0 s');
-        }
-
-        if (memoryElem) {
-            const memoryText = memoryElem.textContent.trim();
-            // Example: "65536 Kb" -> "64 MB"
-            const memoryKb = parseInt(memoryText);
-            if (!isNaN(memoryKb)) {
-                memoryLimitMb = Math.floor(memoryKb / 1024) + ' MB';
-            }
-        }
-
-        // Create hidden container
-        const container = document.createElement('div');
-        container.id = 'competitive-companion-data';
-        container.dataset.problemId = currentId;
-        container.style.display = 'none';
-        container.className = 'problem-statement'; // Codeforces class
-
-        // Header
-        const header = document.createElement('div');
-        header.className = 'header';
-        header.innerHTML = `
-            <div class="title">${escapeHtml(title)}</div>
-            <div class="time-limit">${timeLimit}</div>
-            <div class="memory-limit">${memoryLimitMb}</div>
-            <div class="input-file">standard input</div>
-            <div class="output-file">standard output</div>
-        `;
-        container.appendChild(header);
-
-        // Tests
-        const table = document.querySelector('.Table') || document.querySelector('.MsoTableGrid') || document.querySelector('.TableGrid1') || document.querySelector('.TableGrid2') || document.querySelector('.TableGrid3') || document.querySelector('.submit__des table');
-        if (table) {
-            const rows = table.querySelectorAll('tr');
-            // Skip header row if it exists
-            let startIndex = 0;
-            if (rows.length > 0) {
-                const headerText = rows[0].textContent.toLowerCase();
-                if (headerText.includes('input') || headerText.includes('output')) {
-                    startIndex = 1;
-                }
-            }
-
-            for (let i = startIndex; i < rows.length; i++) {
-                const cells = rows[i].querySelectorAll('td');
-                if (cells.length >= 2) {
-                    let input = cells[0].innerText.trim();
-                    let output = cells[1].innerText.trim();
-
-                    // Normalize newlines
-                    input = input.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
-                    output = output.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
-
-                    const inputDiv = document.createElement('div');
-                    inputDiv.className = 'input';
-                    inputDiv.innerHTML = `<pre>${escapeHtml(input)}</pre>`;
-                    container.appendChild(inputDiv);
-
-                    const outputDiv = document.createElement('div');
-                    outputDiv.className = 'output';
-                    outputDiv.innerHTML = `<pre>${escapeHtml(output)}</pre>`;
-                    container.appendChild(outputDiv);
-                }
-            }
-        }
-
-        document.body.appendChild(container);
-    }
-
-    function initBetaSite() {
-        // Always try to add the copy title button (it has its own internal checks)
-        // This ensures it gets added even if the title loads after the submit container
-        addCopyTitleButton();
-
-        // Guard to prevent multiple injections
-        if (document.querySelector('.quick-submit-btn')) return;
-
-        const submitContainer = document.querySelector('.submit-container');
-        if (!submitContainer) return;
-
-        const fileInput = submitContainer.querySelector('input[type="file"]');
-        const realSubmitBtn = document.querySelector('.submit-status-container button.ant-btn-primary');
-
-        if (!fileInput || !realSubmitBtn) return;
-
-        // Double check to ensure we don't inject twice if calls overlap
-        if (document.querySelector('.quick-submit-btn')) return;
-
-        // Paste and Submit Button
-        const quickSubmitBtn = document.createElement('button');
-        quickSubmitBtn.className = 'ant-btn ant-btn-primary quick-submit-btn';
-        quickSubmitBtn.textContent = 'Dán và Nộp bài';
-        quickSubmitBtn.style.background = '#1890ff'; // Distinct color
-        quickSubmitBtn.style.width = '30%';
-        quickSubmitBtn.style.marginTop = '10px';
-        quickSubmitBtn.style.marginLeft = 'auto';
-        quickSubmitBtn.style.display = 'block';
-
-        // Insert below the submit status container
-        const submitStatusContainer = submitContainer.querySelector('.submit-status-container');
-        if (submitStatusContainer) {
-            submitStatusContainer.parentNode.insertBefore(quickSubmitBtn, submitStatusContainer.nextSibling);
-        } else {
-            submitContainer.appendChild(quickSubmitBtn);
-        }
-
-        const getCompilerText = () => {
-            const compilerSelect = document.querySelector('.compiler-container .ant-select-selection-item');
-            return compilerSelect ? compilerSelect.title || compilerSelect.textContent : '';
-        };
-
-        const submitAction = () => {
-            if (!realSubmitBtn.disabled) {
-                realSubmitBtn.click();
-            } else {
-                showNotification('Nút nộp bài đang bị vô hiệu hóa (có thể đang xử lý)', 'warning');
-            }
-        };
-
-        quickSubmitBtn.onclick = () => handlePasteAndSubmit(fileInput, submitAction, getCompilerText);
-
-        // Editor
-        if (!document.querySelector('.code-editor-section')) {
-            const editorContainer = document.createElement('div');
-            editorContainer.style.marginTop = '20px';
-
-            const toolsContainer = submitContainer.closest('.tools-container');
-            if (toolsContainer && toolsContainer.parentNode) {
-                toolsContainer.parentNode.insertBefore(editorContainer, toolsContainer.nextSibling);
-            } else {
-                submitContainer.parentNode.appendChild(editorContainer);
-            }
-
-            createEditor(editorContainer, realSubmitBtn, fileInput, getCompilerText, submitAction);
-        }
-
-        // Inject Competitive Companion Data (Codeforces format)
-        injectCompetitiveCompanionData();
-
-        // Add Copy Title Button
-        addCopyTitleButton();
-    }
-
-    function escapeHtml(text) {
-        if (!text) return text;
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+    // --- Unified Competitive Companion Data Injection (DRY) ---
 
     function injectCompetitiveCompanionData() {
-        const urlParts = window.location.href.split('/');
-        const currentId = urlParts[urlParts.length - 1];
+        const currentId = getProblemId();
         const existingContainer = document.getElementById('competitive-companion-data');
 
         if (existingContainer) {
@@ -949,38 +717,23 @@
             existingContainer.remove();
         }
 
-        const titleElem = document.querySelector('.body-header h2');
-        const problemContainer = document.querySelector('.problem-container');
-        const tableGrid = document.querySelector('.MsoTableGrid');
+        const titleElem = getTitleElement();
+        if (!titleElem) return;
 
-        if (!titleElem || !problemContainer) return;
+        // On beta site, also need the problem container for limits
+        if (isBetaSite() && !document.querySelector('.problem-container')) return;
 
-        // Clone and remove button to get clean text
-        // Clone and remove button to get clean text
-        const clone = titleElem.cloneNode(true);
-        const buttons = clone.querySelectorAll('.copy-title-btn, button');
-        buttons.forEach(btn => btn.remove());
-        let title = clone.textContent.trim();
-        // Fallback: Remove "Copy tên file" text if it somehow remains
-        title = title.replace('Copy tên file', '').trim();
-        // Use generated title for Competitive Companion
+        let title = getCleanTitle(titleElem, currentId);
         title = generateCCTitle(currentId, title);
 
-        // Extract limits
-        const text = problemContainer.textContent;
-        const timeMatch = text.match(/Giới hạn thời gian:\s*(\d+)s/);
-        const memoryMatch = text.match(/Giới hạn bộ nhớ:\s*(\d+)Kb/);
-
-        const timeLimit = timeMatch ? timeMatch[1] + '.0 s' : '1.0 s';
-        const memoryLimitKb = memoryMatch ? parseInt(memoryMatch[1]) : 256000;
-        const memoryLimitMb = Math.floor(memoryLimitKb / 1024) + ' MB';
+        const { timeLimit, memoryLimitMb } = getLimits();
 
         // Create hidden container
         const container = document.createElement('div');
         container.id = 'competitive-companion-data';
         container.dataset.problemId = currentId;
         container.style.display = 'none';
-        container.className = 'problem-statement'; // Codeforces class
+        container.className = 'problem-statement';
 
         // Header
         const header = document.createElement('div');
@@ -994,11 +747,10 @@
         `;
         container.appendChild(header);
 
-        // Tests
-        const table = document.querySelector('.MsoTableGrid') || document.querySelector('.Table') || document.querySelector('.TableGrid1') || document.querySelector('.TableGrid2') || document.querySelector('.TableGrid3') || document.querySelector('.problem-container table');
+        // Tests — shared table parsing
+        const table = getSampleTable();
         if (table) {
             const rows = table.querySelectorAll('tr');
-            // Skip header row if it exists
             let startIndex = 0;
             if (rows.length > 0) {
                 const headerText = rows[0].textContent.toLowerCase();
@@ -1013,7 +765,6 @@
                     let input = cells[0].innerText.trim();
                     let output = cells[1].innerText.trim();
 
-                    // Normalize newlines
                     input = input.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
                     output = output.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
 
@@ -1036,7 +787,6 @@
     function addCopyButtons() {
         const tables = document.querySelectorAll('.Table, .MsoTableGrid, .TableGrid1, .TableGrid2, .TableGrid3, .submit__des table, .problem-container table');
         tables.forEach(table => {
-            // Check if processed
             if (table.dataset.copyButtonsAdded) return;
             table.dataset.copyButtonsAdded = 'true';
 
@@ -1052,14 +802,10 @@
             for (let i = startIndex; i < rows.length; i++) {
                 const cells = rows[i].querySelectorAll('td');
                 cells.forEach(cell => {
-                    // Check if cell has content
                     const text = cell.textContent.trim();
                     if (!text) return;
-
-                    // Skip if content is just "Input" or "Output" (headers)
                     if (['input', 'output'].includes(text.toLowerCase())) return;
 
-                    // Create container for relative positioning
                     if (cell.style.position !== 'absolute' && cell.style.position !== 'fixed') {
                         cell.style.position = 'relative';
                     }
@@ -1101,16 +847,11 @@
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Clone cell and remove button to avoid copying button text
                         const clone = cell.cloneNode(true);
                         const btnInClone = clone.querySelector('.copy-btn');
                         if (btnInClone) btnInClone.remove();
 
                         let text = clone.innerText;
-
-                        // Fix: Remove extra newlines and indentation
-                        // Split by newline, trim each line to remove leading/trailing whitespace (including indentation),
-                        // filter out empty lines, and join back with a single newline.
                         text = text.split('\n')
                             .map(line => line.trim())
                             .filter(line => line.length > 0)
@@ -1132,16 +873,197 @@
         });
     }
 
+    // --- Site Specific Implementations ---
+
+    function customizeOldSiteUI() {
+        const banner = document.querySelector('.username.container-fluid');
+        if (banner) {
+            banner.style.display = 'none';
+        }
+
+        const navMenu = document.querySelector('.nav__menu');
+        if (navMenu) {
+            const betaItem = document.createElement('div');
+            betaItem.className = 'nav__menu__item';
+            betaItem.innerHTML = `
+                <a href="/beta">
+                    Beta
+                </a>
+            `;
+            navMenu.appendChild(betaItem);
+        }
+    }
+
+    function initOldSite() {
+
+        waitForElement('.submit__pad', (submitPad) => {
+            const submitBtn = submitPad.querySelector('.submit__pad__btn');
+            const fileInput = document.getElementById('fileInput');
+            const form = document.querySelector('.submit__pad form');
+
+            if (!submitBtn || !fileInput || !form) return;
+
+            const quickSubmitBtn = document.createElement('button');
+            quickSubmitBtn.type = 'button';
+            quickSubmitBtn.className = 'submit__pad__btn quick-submit-btn';
+            quickSubmitBtn.textContent = 'Dán và Nộp bài';
+
+            const getCompilerText = () => {
+                const compiler = document.getElementById('compiler');
+                return compiler ? compiler.options[compiler.selectedIndex].text : '';
+            };
+
+            const submitAction = () => form.submit();
+
+            quickSubmitBtn.onclick = () => handlePasteAndSubmit(fileInput, submitAction, getCompilerText);
+            submitBtn.parentNode.appendChild(quickSubmitBtn);
+
+            createEditor(submitPad.parentNode, submitBtn, fileInput, getCompilerText, submitAction);
+
+            const editor = document.querySelector('.code-editor-section');
+            if (editor) {
+                submitPad.parentNode.insertBefore(editor, submitPad.nextSibling);
+            }
+
+            // Unified injection
+            injectCompetitiveCompanionData();
+
+            addCopyTitleButton();
+
+            addCopyButtons();
+        });
+    }
+
+    function initBetaSite() {
+        // Always try — these have their own idempotency checks
+        addCopyTitleButton();
+        injectCompetitiveCompanionData();
+        addCopyButtons();
+
+        // Guard to prevent multiple injections of UI elements
+        if (document.querySelector('.quick-submit-btn')) return;
+
+        const submitContainer = document.querySelector('.submit-container');
+        if (!submitContainer) return;
+
+        const fileInput = submitContainer.querySelector('input[type="file"]');
+        const realSubmitBtn = document.querySelector('.submit-status-container button.ant-btn-primary');
+
+        if (!fileInput || !realSubmitBtn) return;
+
+        if (document.querySelector('.quick-submit-btn')) return;
+
+        const quickSubmitBtn = document.createElement('button');
+        quickSubmitBtn.className = 'ant-btn ant-btn-primary quick-submit-btn';
+        quickSubmitBtn.textContent = 'Dán và Nộp bài';
+        quickSubmitBtn.style.background = '#1890ff';
+        quickSubmitBtn.style.width = '30%';
+        quickSubmitBtn.style.marginTop = '10px';
+        quickSubmitBtn.style.marginLeft = 'auto';
+        quickSubmitBtn.style.display = 'block';
+
+        const submitStatusContainer = submitContainer.querySelector('.submit-status-container');
+        if (submitStatusContainer) {
+            submitStatusContainer.parentNode.insertBefore(quickSubmitBtn, submitStatusContainer.nextSibling);
+        } else {
+            submitContainer.appendChild(quickSubmitBtn);
+        }
+
+        const getCompilerText = () => {
+            const compilerSelect = document.querySelector('.compiler-container .ant-select-selection-item');
+            return compilerSelect ? compilerSelect.title || compilerSelect.textContent : '';
+        };
+
+        const submitAction = () => {
+            if (!realSubmitBtn.disabled) {
+                realSubmitBtn.click();
+            } else {
+                showNotification('Nút nộp bài đang bị vô hiệu hóa (có thể đang xử lý)', 'warning');
+            }
+        };
+
+        quickSubmitBtn.onclick = () => handlePasteAndSubmit(fileInput, submitAction, getCompilerText);
+
+        if (!document.querySelector('.code-editor-section')) {
+            const editorContainer = document.createElement('div');
+            editorContainer.style.marginTop = '20px';
+
+            const toolsContainer = submitContainer.closest('.tools-container');
+            if (toolsContainer && toolsContainer.parentNode) {
+                toolsContainer.parentNode.insertBefore(editorContainer, toolsContainer.nextSibling);
+            } else {
+                submitContainer.parentNode.appendChild(editorContainer);
+            }
+
+            createEditor(editorContainer, realSubmitBtn, fileInput, getCompilerText, submitAction);
+        }
+    }
+
+    // --- Keyboard Shortcuts (Feature B) ---
+
+    function setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Don't fire shortcuts when typing in inputs (except our textarea)
+            const tag = e.target.tagName.toLowerCase();
+            const isOurTextarea = e.target.classList.contains('code-editor-textarea');
+            if ((tag === 'input' || tag === 'textarea') && !isOurTextarea) return;
+
+            // Ctrl+Shift+V: Paste & Submit
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'V') {
+                e.preventDefault();
+                const btn = document.querySelector('.quick-submit-btn');
+                if (btn) btn.click();
+            }
+
+            // Ctrl+Shift+C: Copy filename (only when not in a text field)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+                if (tag !== 'textarea' && tag !== 'input') {
+                    e.preventDefault();
+                    const btn = document.querySelector('.copy-title-btn');
+                    if (btn) btn.click();
+                }
+            }
+        });
+    }
+
+    // --- SPA Navigation Detection (Feature D) ---
+
+    function checkNavigationChange() {
+        const currentId = getProblemId();
+        if (currentId !== lastProblemId && lastProblemId !== null) {
+            // Problem changed — clean up stale elements
+            const existingCC = document.getElementById('competitive-companion-data');
+            if (existingCC) existingCC.remove();
+
+            const existingCopyBtn = document.querySelector('.copy-title-btn');
+            if (existingCopyBtn) existingCopyBtn.remove();
+
+            // Reset copy buttons flag on tables so they get re-added
+            document.querySelectorAll('[data-copy-buttons-added]').forEach(el => {
+                delete el.dataset.copyButtonsAdded;
+            });
+        }
+        lastProblemId = currentId;
+    }
+
     // --- Main Entry Point ---
+
+    // Setup keyboard shortcuts globally
+    setupKeyboardShortcuts();
+
+    // Remove banner on ALL /student/ pages (listings, rankings, etc.)
+    if (window.location.href.includes(CONFIG.oldSiteBase)) {
+        customizeOldSiteUI();
+    }
 
     if (window.location.href.includes(CONFIG.oldUrlPart)) {
         console.log('PTIT Editor: Old Site Detected');
+        lastProblemId = getProblemId();
         initOldSite();
-        // Add copy buttons after a short delay to ensure DOM is ready
         setTimeout(addCopyButtons, 1000);
     } else {
         // Beta Site - SPA Handling
-
+        lastProblemId = getProblemId();
 
         // Try immediately
         if (isBetaSite()) {
@@ -1149,12 +1071,16 @@
             setTimeout(addCopyButtons, 1000);
         }
 
-        // Observe for navigation/DOM changes
-        const observer = new MutationObserver((mutations) => {
-            if (isBetaSite()) {
-                initBetaSite();
-                addCopyButtons();
-            }
+        // Observe for navigation/DOM changes (debounced to avoid excessive calls)
+        let debounceTimer = null;
+        const observer = new MutationObserver(() => {
+            if (debounceTimer) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (isBetaSite()) {
+                    checkNavigationChange();
+                    initBetaSite();
+                }
+            }, 300);
         });
 
         observer.observe(document.body, {
