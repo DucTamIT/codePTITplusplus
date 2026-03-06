@@ -8,6 +8,9 @@
     "clipboardWrite",
     "storage"
   ],
+  "host_permissions": [
+    "http://localhost/*"
+  ],
   "background": {
     "service_worker": "background.js",
     "scripts": [
