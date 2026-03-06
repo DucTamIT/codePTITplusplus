@@ -75,7 +75,7 @@ Nếu muốn dùng Competitive Companion song song, cần thêm quy tắc tùy c
 
 ## Thông tin tác giả
 
-**Nguyễn Hoàng Đức Tâm** — B25DCCN523
+**Nguyễn Hoàng Đức Tâm**
 
 - GitHub: [DucTamIT/codePTITplusplus](https://github.com/DucTamIT/codePTITplusplus)
 - Facebook: [nguyenhoangductam](https://facebook.com/nguyenhoangductam)
