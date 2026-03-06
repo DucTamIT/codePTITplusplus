@@ -1,0 +1,576 @@
+/* ============================================================
+   codePTIT++ — Modern UI Design System
+   Compatible with both original and beta CodePTIT sites
+   ============================================================ */
+
+/* --- Font --- (Injected dynamically via content.js to fix cross-browser path issues) */
+
+:root {
+    --cptit-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --cptit-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Monaco', 'Menlo', monospace;
+    --cptit-radius: 10px;
+    --cptit-radius-sm: 6px;
+    --cptit-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Accent palette */
+    --cptit-accent: #4f8cff;
+    --cptit-accent-hover: #6ea1ff;
+    --cptit-accent-active: #3a73e0;
+    --cptit-accent-bg: rgba(79, 140, 255, 0.08);
+
+    --cptit-success: #34d058;
+    --cptit-danger: #f85149;
+    --cptit-warning: #e3b341;
+    --cptit-info: #58a6ff;
+}
+
+/* ============================================================
+   1. EDITOR SECTION
+   ============================================================ */
+
+.code-editor-section {
+    margin-top: 20px;
+    font-family: var(--cptit-font);
+}
+
+/* --- CodeMirror Editor (Dark default) --- */
+
+#cm-editor-wrapper {
+    position: relative;
+}
+
+#cm-editor-wrapper .CodeMirror {
+    height: 420px;
+    font-family: var(--cptit-mono) !important;
+    font-size: 14px;
+    line-height: 1.65;
+    border-radius: var(--cptit-radius);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.12);
+    transition: border-color var(--cptit-transition), box-shadow var(--cptit-transition);
+}
+
+#cm-editor-wrapper .CodeMirror-focused {
+    border-color: var(--cptit-accent);
+    box-shadow:
+        0 0 0 3px rgba(79, 140, 255, 0.15),
+        0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Active line */
+#cm-editor-wrapper .CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Matching brackets */
+#cm-editor-wrapper .CodeMirror-matchingbracket {
+    color: var(--cptit-success) !important;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* Selected text */
+#cm-editor-wrapper .CodeMirror-selectedtext {
+    background: rgba(79, 140, 255, 0.25) !important;
+}
+
+/* Fold gutter */
+#cm-editor-wrapper .CodeMirror-foldgutter-open,
+#cm-editor-wrapper .CodeMirror-foldgutter-folded {
+    color: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: color var(--cptit-transition);
+}
+
+#cm-editor-wrapper .CodeMirror-foldgutter-open:hover,
+#cm-editor-wrapper .CodeMirror-foldgutter-folded:hover {
+    color: var(--cptit-accent);
+}
+
+/* Fullscreen */
+.CodeMirror-fullscreen {
+    z-index: 99999;
+}
+
+/* Search dialog */
+.CodeMirror-dialog {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 12px;
+    font-family: var(--cptit-mono) !important;
+    font-size: 13px;
+}
+
+.CodeMirror-dialog input {
+    background: #313244;
+    color: #cdd6f4;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--cptit-radius-sm);
+    padding: 4px 8px;
+    font-family: var(--cptit-mono) !important;
+    font-size: 13px;
+    transition: border-color var(--cptit-transition);
+}
+
+.CodeMirror-dialog input:focus {
+    outline: none;
+    border-color: var(--cptit-accent);
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.15);
+}
+
+#cm-editor-wrapper .CodeMirror pre.CodeMirror-line,
+#cm-editor-wrapper .CodeMirror pre.CodeMirror-line-like,
+#cm-editor-wrapper .CodeMirror * {
+    font-family: var(--cptit-mono) !important;
+}
+
+/* --- Light Mode --- */
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror {
+    border: 1px solid #e2e8f0;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.03);
+    background: #fff;
+}
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror-focused {
+    border-color: var(--cptit-accent);
+    box-shadow:
+        0 0 0 3px rgba(79, 140, 255, 0.1),
+        0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror-activeline-background {
+    background: rgba(0, 0, 0, 0.025);
+}
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror-foldgutter-open,
+#cm-editor-wrapper.cm-light-mode .CodeMirror-foldgutter-folded {
+    color: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Scrollbars (Dark) --- */
+
+#cm-editor-wrapper .CodeMirror-vscrollbar,
+#cm-editor-wrapper .CodeMirror-hscrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+#cm-editor-wrapper .CodeMirror-vscrollbar::-webkit-scrollbar,
+#cm-editor-wrapper .CodeMirror-hscrollbar::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+#cm-editor-wrapper .CodeMirror-vscrollbar::-webkit-scrollbar-track,
+#cm-editor-wrapper .CodeMirror-hscrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#cm-editor-wrapper .CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+#cm-editor-wrapper .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+#cm-editor-wrapper .CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover,
+#cm-editor-wrapper .CodeMirror-hscrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollbars (Light) */
+#cm-editor-wrapper.cm-light-mode .CodeMirror-vscrollbar,
+#cm-editor-wrapper.cm-light-mode .CodeMirror-hscrollbar {
+    scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+#cm-editor-wrapper.cm-light-mode .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+}
+
+#cm-editor-wrapper.cm-light-mode .CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover,
+#cm-editor-wrapper.cm-light-mode .CodeMirror-hscrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* --- Theme Toggle Button --- */
+
+.cm-theme-toggle {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 7px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--cptit-transition);
+    line-height: 0;
+    backdrop-filter: blur(4px);
+}
+
+.cm-theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+#cm-editor-wrapper.cm-light-mode .cm-theme-toggle {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.35);
+}
+
+#cm-editor-wrapper.cm-light-mode .cm-theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.07);
+    color: rgba(0, 0, 0, 0.7);
+    transform: scale(1.05);
+}
+
+/* ============================================================
+   2. EDITOR TOOLBAR & BUTTONS
+   ============================================================ */
+
+.editor-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 8px;
+}
+
+.left-buttons,
+.right-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+/* Base button */
+.editor-button {
+    padding: 7px 16px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--cptit-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--cptit-font);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.editor-button:active {
+    transform: scale(0.97);
+}
+
+/* Paste button — accent */
+.editor-button:not(.secondary):not(.primary) {
+    background: var(--cptit-accent);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(79, 140, 255, 0.2);
+}
+
+.editor-button:not(.secondary):not(.primary):hover {
+    background: var(--cptit-accent-hover);
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.3);
+}
+
+/* Secondary — ghost */
+.editor-button.secondary {
+    background: transparent;
+    border: 1px solid #d0d5dd;
+    color: #475467;
+}
+
+.editor-button.secondary:hover {
+    background: #f8fafc;
+    border-color: var(--cptit-accent);
+    color: var(--cptit-accent);
+}
+
+/* Submit button — success */
+.editor-button.primary {
+    background: var(--cptit-success);
+    color: #fff;
+    padding: 7px 22px;
+    box-shadow: 0 1px 3px rgba(52, 208, 88, 0.2);
+}
+
+.editor-button.primary:hover {
+    background: #3eda66;
+    box-shadow: 0 2px 8px rgba(52, 208, 88, 0.3);
+}
+
+.editor-button.primary:active {
+    background: #28a745;
+}
+
+/* Stats row */
+.editor-stats-row {
+    text-align: right;
+    font-size: 12px;
+    color: #8b95a5;
+    margin-top: 6px;
+    font-family: var(--cptit-mono);
+}
+
+.shortcut-hints {
+    font-family: var(--cptit-mono);
+    letter-spacing: -0.2px;
+}
+
+/* Icon-only buttons (Paste, Clear, Settings, Guide) */
+.editor-icon-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--cptit-transition);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.editor-icon-btn:not(.secondary) {
+    background: var(--cptit-accent);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(79, 140, 255, 0.2);
+}
+
+.editor-icon-btn:not(.secondary):hover {
+    background: var(--cptit-accent-hover);
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.3);
+}
+
+.editor-icon-btn.secondary {
+    background: transparent;
+    border: 1px solid #d0d5dd;
+    color: #475467;
+}
+
+.editor-icon-btn.secondary:hover {
+    background: #f8fafc;
+    border-color: var(--cptit-accent);
+    color: var(--cptit-accent);
+}
+
+.editor-icon-btn:active {
+    transform: scale(0.93);
+}
+
+/* ============================================================
+   3. QUICK SUBMIT BUTTON (old site + beta)
+   ============================================================ */
+
+.quick-submit-btn {
+    background: var(--cptit-accent);
+    color: white;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    font-family: var(--cptit-font);
+    transition: all var(--cptit-transition);
+    margin-left: 10px;
+    box-shadow: 0 1px 3px rgba(79, 140, 255, 0.15);
+}
+
+.quick-submit-btn:hover {
+    background: var(--cptit-accent-hover);
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.25);
+}
+
+.quick-submit-btn:active {
+    transform: scale(0.97);
+}
+
+.quick-submit-btn-beta {
+    background: var(--cptit-accent);
+    width: 30%;
+    margin-top: 10px;
+    margin-left: auto;
+    display: block;
+}
+
+/* ============================================================
+   4. NOTIFICATION TOASTS
+   ============================================================ */
+
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 20px;
+    border-radius: var(--cptit-radius);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 1px 4px rgba(0, 0, 0, 0.04);
+    z-index: 10000;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--cptit-font);
+    line-height: 1.5;
+    animation: toastSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1);
+    background: #fff;
+    border-left: 4px solid transparent;
+    max-width: 380px;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-toast.success {
+    border-left-color: var(--cptit-success);
+    background: linear-gradient(135deg, #f0fdf4, #fff);
+}
+
+.notification-toast.error {
+    border-left-color: var(--cptit-danger);
+    background: linear-gradient(135deg, #fef2f2, #fff);
+}
+
+.notification-toast.warning {
+    border-left-color: var(--cptit-warning);
+    background: linear-gradient(135deg, #fefce8, #fff);
+}
+
+.notification-toast.info {
+    border-left-color: var(--cptit-info);
+    background: linear-gradient(135deg, #eff6ff, #fff);
+}
+
+.notification-toast.fade-out {
+    animation: toastSlideOut 0.25s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+/* ============================================================
+   5. COPY BUTTON (test case cells)
+   ============================================================ */
+
+.copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--cptit-radius-sm);
+    cursor: pointer;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    z-index: 10;
+    color: #475467;
+    font-family: var(--cptit-font);
+    transition: all var(--cptit-transition);
+    opacity: 0.7;
+}
+
+.copy-btn:hover {
+    background: #fff;
+    border-color: var(--cptit-accent);
+    color: var(--cptit-accent);
+    box-shadow: 0 2px 6px rgba(79, 140, 255, 0.12);
+}
+
+/* ============================================================
+   6. TITLE ACTION BUTTONS (Copy filename, Send to IDE)
+   ============================================================ */
+
+.title-action-btn {
+    margin-left: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 14px;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #475467;
+    vertical-align: middle;
+    transition: all var(--cptit-transition);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-family: var(--cptit-font);
+}
+
+.title-action-btn:hover {
+    color: var(--cptit-accent);
+    border-color: var(--cptit-accent);
+    background: var(--cptit-accent-bg);
+    box-shadow: 0 2px 6px rgba(79, 140, 255, 0.1);
+}
+
+.title-action-btn:active {
+    transform: scale(0.97);
+    background: rgba(79, 140, 255, 0.12);
+}
+
+.send-ide-btn {
+    background: var(--cptit-accent-bg);
+    border-color: rgba(79, 140, 255, 0.2);
+    color: var(--cptit-accent);
+}
+
+.send-ide-btn:hover {
+    background: rgba(79, 140, 255, 0.15);
+    border-color: var(--cptit-accent);
+    color: var(--cptit-accent-active);
+}
+
+/* ============================================================
+   7. SETTINGS MODAL OVERLAY
+   ============================================================ */
+
+#settings-overlay {
+    backdrop-filter: blur(3px) !important;
+}
+
+#settings-modal {
+    border-radius: var(--cptit-radius) !important;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2),
+        0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}

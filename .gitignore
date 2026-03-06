@@ -1,2 +1,9 @@
-beta.html
 .DS_Store
+*.zip
+*.crx
+*.xpi
+node_modules/
+.vscode/
+web-ext-artifacts/
+debug/
+.gitignore

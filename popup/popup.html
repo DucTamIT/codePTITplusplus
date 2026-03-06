@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>codePTIT++ Settings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            width: 380px;
+            padding: 20px;
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+            scrollbar-width: thin;
+            scrollbar-color: #c0c8d0 transparent;
+        }
+
+        /* Webkit scrollbar (Chrome, Edge) */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c0c8d0;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aab4;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        h3 {
+            margin: 0;
+            color: #1890ff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .section {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+            color: #34495e;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .port-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #2c3e50;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .port-input:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .port-hint {
+            font-size: 11px;
+            color: #999;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .dropdown-input {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #2c3e50;
+            box-sizing: border-box;
+            background-color: #fff;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2334495e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+
+        .dropdown-input:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .user-info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .user-info h4 {
+            margin: 0 0 10px 0;
+            color: #1890ff;
+            font-size: 14px;
+        }
+
+        .user-info p {
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user-info strong {
+            color: #555;
+        }
+
+        .user-info a {
+            color: #1890ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+        }
+
+        button:hover {
+            background: #40a9ff;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .contact-bar {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .contact-bar a {
+            color: #8c8c8c;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s, transform 0.15s;
+        }
+
+        .contact-bar a:hover {
+            color: #1890ff;
+            transform: translateY(-2px);
+        }
+
+        #status {
+            margin-top: 10px;
+            text-align: center;
+            color: #27ae60;
+            font-weight: 500;
+            height: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h3>Cài đặt Extension <span id="ext-version" style="font-size: 12px; color: #666; font-weight: normal;"></span>
+        </h3>
+    </div>
+
+    <style>
+        .chip-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .chip {
+            background-color: #f0f7ff;
+            color: #1890ff;
+            border: 1px dashed #91d5ff;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .chip:hover {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+        }
+
+        .chip strong {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #e6f7ff;
+            padding: 0 4px;
+            border-radius: 2px;
+            margin-right: 4px;
+        }
+
+        .preview-box {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px dashed #d9d9d9;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #595959;
+            word-break: break-all;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            margin-right: 4px;
+            color: #8c8c8c;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+    </style>
+
+    <div class="section">
+        <span class="label">Định dạng tên file</span>
+        <input type="text" id="nameFormat" class="port-input" placeholder="Mặc định: [id]_[ten_lien]">
+        <div class="chip-container" data-target="nameFormat">
+            <span class="chip" title="Thêm [id] vào con trỏ chuột"><strong>[id]</strong> Mã bài</span>
+            <span class="chip" title="Thêm [ten] vào con trỏ chuột"><strong>[ten]</strong> Tên bài</span>
+            <span class="chip" title="Thêm [ten_kd] vào con trỏ chuột"><strong>[ten_kd]</strong> Không dấu</span>
+            <span class="chip" title="Thêm [ten_gach] vào con trỏ chuột"><strong>[ten_gach]</strong> Gạch dưới</span>
+            <span class="chip" title="Thêm [ten_lien] vào con trỏ chuột"><strong>[ten_lien]</strong> Viết liền</span>
+        </div>
+        <div class="preview-box">
+            <span class="preview-label">Xem trước:</span>
+            <span id="namePreview">...</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">Định dạng tên bài (Gửi sang IDE)</span>
+        <input type="text" id="ccNameFormat" class="port-input" placeholder="Mặc định: [id] - [ten]">
+        <div class="chip-container" data-target="ccNameFormat">
+            <span class="chip" title="Thêm [id] vào con trỏ chuột"><strong>[id]</strong> Mã bài</span>
+            <span class="chip" title="Thêm [ten] vào con trỏ chuột"><strong>[ten]</strong> Tên bài</span>
+            <span class="chip" title="Thêm [ten_kd] vào con trỏ chuột"><strong>[ten_kd]</strong> Không dấu</span>
+            <span class="chip" title="Thêm [ten_gach] vào con trỏ chuột"><strong>[ten_gach]</strong> Gạch dưới</span>
+            <span class="chip" title="Thêm [ten_lien] vào con trỏ chuột"><strong>[ten_lien]</strong> Viết liền</span>
+        </div>
+        <div class="preview-box">
+            <span class="preview-label">Xem trước:</span>
+            <span id="ccNamePreview">...</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">Port tùy chỉnh (Competitive Companion-compatible)</span>
+        <input type="text" id="customPorts" class="port-input" placeholder="Ví dụ: 12345, 8080">
+        <div class="port-hint">
+            Mặc định đã gửi đến tất cả port chuẩn (CPH, CP Editor, Caide, acmX, Hightail, Mind Sport, cpbooster).<br>
+            Chỉ thêm port nếu IDE của bạn dùng port khác.
+        </div>
+    </div>
+
+    <button id="saveBtn">Lưu Cài Đặt</button>
+    <div id="status"></div>
+
+    <div class="contact-bar">
+        <a href="https://github.com/DucTamIT/codePTITplusplus" target="_blank" title="GitHub">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.165c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .322.218.694.825.576C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+        </a>
+        <a href="https://facebook.com/nguyenhoangductam" target="_blank" title="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+            </svg>
+        </a>
+        <a href="mailto:tambmo22@gmail.com" title="Email">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+        </a>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

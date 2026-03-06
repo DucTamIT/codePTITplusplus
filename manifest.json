@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
   "name": "codePTIT",
-  "version": "0.4",
+  "version": "0.5",
   "description": "PTIT Code enhancement",
   "permissions": [
     "clipboardRead",
     "clipboardWrite",
     "storage"
   ],
+  "host_permissions": [
+    "http://localhost:*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "codeptit@tamnhd.b25cn523",
@@ -21,12 +27,12 @@
     }
   },
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup/popup.html"
   },
   "content_scripts": [
     {
@@ -35,10 +41,44 @@
         "https://code.ptit.edu.vn/beta/*"
       ],
       "js": [
-        "content.js"
+        "vendor/codemirror/codemirror.min.js",
+        "vendor/codemirror/mode/clike.min.js",
+        "vendor/codemirror/mode/python.min.js",
+        "vendor/codemirror/addon/closebrackets.min.js",
+        "vendor/codemirror/addon/matchbrackets.min.js",
+        "vendor/codemirror/addon/active-line.min.js",
+        "vendor/codemirror/addon/comment.min.js",
+        "vendor/codemirror/addon/foldcode.min.js",
+        "vendor/codemirror/addon/foldgutter.min.js",
+        "vendor/codemirror/addon/brace-fold.min.js",
+        "vendor/codemirror/addon/indent-fold.min.js",
+        "vendor/codemirror/addon/dialog.min.js",
+        "vendor/codemirror/addon/searchcursor.min.js",
+        "vendor/codemirror/addon/search.min.js",
+        "vendor/codemirror/addon/jump-to-line.min.js",
+        "vendor/codemirror/addon/fullscreen.min.js",
+        "vendor/codemirror/addon/mark-selection.min.js",
+        "content/content.js"
       ],
       "css": [
-        "styles.css"
+        "vendor/codemirror/codemirror.min.css",
+        "vendor/codemirror/theme/material-darker.css",
+        "vendor/codemirror/addon/foldgutter.css",
+        "vendor/codemirror/addon/dialog.css",
+        "vendor/codemirror/addon/fullscreen.css",
+        "content/styles.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup/popup.html",
+        "popup/popup.js",
+        "vendor/fonts/*"
+      ],
+      "matches": [
+        "https://code.ptit.edu.vn/*"
       ]
     }
   ]
