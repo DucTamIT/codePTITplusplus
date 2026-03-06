@@ -46,12 +46,9 @@ Tiện ích mở rộng cho trình duyệt, hỗ trợ người dùng học và 
 ### Phím tắt
 | Tổ hợp phím | Chức năng |
 | :--- | :--- |
-| `Ctrl + Enter` | Nộp bài |
-| `Ctrl + Shift + V` | Dán từ bộ nhớ đệm và nộp bài |
-| `Ctrl + Shift + P` | Dán từ bộ nhớ đệm |
-| `Ctrl + /` | Bật / tắt chú thích dòng |
-| `Ctrl + F` | Tìm kiếm trong code |
-| `F11` | Toàn màn hình |
+| `Ctrl/⌘ + Enter` | Nộp bài |
+| `Ctrl/⌘ + Shift + V` | Dán từ bộ nhớ đệm và nộp bài |
+| `Ctrl/⌘ + Shift + X` | Gửi đề bài sang IDE |
 
 ### Tùy chỉnh định dạng tên
 Truy cập cài đặt tiện ích để thiết lập định dạng tên file và tên bài gửi sang IDE bằng các biến mẫu:

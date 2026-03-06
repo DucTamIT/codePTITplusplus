@@ -634,13 +634,16 @@
 
     function createEditor(container, submitBtn, fileInput, getCompilerText, submitAction) {
 
+        const isMac = typeof navigator !== 'undefined' && /Mac|iP(hone|ad)/.test(navigator.platform);
+        const mod = isMac ? '⌘' : 'Ctrl';
+
         const editorSection = document.createElement('div');
         editorSection.className = 'code-editor-section';
         editorSection.innerHTML = `
             <div id="cm-editor-wrapper"></div>
             <div class="editor-buttons-row">
                 <div class="left-buttons">
-                    <button class="editor-icon-btn" id="pasteBtn" title="Dán từ Clipboard (Ctrl+Shift+P)">
+                    <button class="editor-icon-btn" id="pasteBtn" title="Dán từ Clipboard (${mod}+Shift+V)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                     </button>
                     <button class="editor-icon-btn secondary" id="clearBtn" title="Xóa code">
@@ -664,7 +667,7 @@
                 </span>
             </div>
             <div class="shortcut-hints" style="font-size: 11px; color: #aaa; margin-top: 6px; text-align: right;">
-                Ctrl+Enter: Nộp bài · Ctrl+Shift+V: Dán &amp; Nộp · Ctrl+Shift+P: Dán · Ctrl+/: Comment · Ctrl+F: Tìm kiếm · F11: Toàn màn hình
+                ${mod}+Enter: Nộp bài · ${mod}+Shift+V: Dán &amp; Nộp · ${mod}+Shift+X: Gửi đề bài
             </div>
         `;
 
@@ -1106,14 +1109,14 @@
             if ((tag === 'input' || tag === 'textarea') && !isOurEditor) return;
 
             // Ctrl+Shift+V: Paste & Submit
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'V') {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.code === 'KeyV' || e.key === 'V' || e.key === 'v')) {
                 e.preventDefault();
                 const btn = document.querySelector('.quick-submit-btn');
                 if (btn) btn.click();
             }
 
             // Ctrl+Shift+C: Copy filename (only when not in a text field)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.code === 'KeyC' || e.key === 'C' || e.key === 'c')) {
                 if (tag !== 'textarea' && tag !== 'input') {
                     e.preventDefault();
                     const btn = document.querySelector('.copy-title-btn');
@@ -1121,8 +1124,8 @@
                 }
             }
 
-            // Ctrl+Shift+P: Send to IDE
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+            // Ctrl+Shift+X (or P): Send to IDE
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.code === 'KeyX' || e.code === 'KeyP' || e.code === 'KeyS')) {
                 e.preventDefault();
                 sendToIDE();
             }
