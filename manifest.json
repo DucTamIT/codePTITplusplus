@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "codePTIT",
-  "version": "0.5",
+  "version": "0.4",
   "description": "PTIT Code enhancement",
   "permissions": [
     "clipboardRead",

@@ -1,53 +1,82 @@
-# CodePTIT++ Extension
+# codePTIT++
 
-## Giới thiệu (Introduction)
-Extension hỗ trợ làm bài trên **CodePTIT** tiện lợi hơn: nộp bài nhanh, copy thông minh, gửi đề trực tiếp đến IDE.
+Tiện ích mở rộng cho trình duyệt, hỗ trợ người dùng học và thi lập trình trên nền tảng [CodePTIT](https://code.ptit.edu.vn) hiệu quả hơn.
 
-*(Enhances CodePTIT experience: quick submit, smart copy, and direct Send to IDE.)*
+## Tính năng
 
-## Tính năng (Features)
-*   **Dán và Nộp bài (Paste & Submit)**: Nộp code trực tiếp từ clipboard.
-*   **Smart Copy**: Copy Input/Output chuẩn, tự động xóa dòng thừa.
-*   **Filename Formatting**: Tự động đặt tên file theo ID, Tên bài (CamelCase, SnakeCase...).
-*   **🚀 Send to IDE**: Gửi đề bài trực tiếp đến CP Editor, CPH (VS Code), v.v. **không cần Competitive Companion**.
-*   **Keyboard Shortcuts**: `Ctrl+Shift+V` (Dán & Nộp), `Ctrl+Shift+C` (Copy tên file), `Ctrl+Shift+P` (Send to IDE).
+### Trình soạn thảo code tích hợp
+- Trình soạn thảo với tô sáng cú pháp, đánh số dòng, tự hoàn thiện dấu ngoặc.
+- Gập khối code, tìm kiếm và thay thế trong file.
+- Chế độ tối / sáng, toàn màn hình.
+- Font chữ JetBrains Mono.
+- Hỗ trợ C, C++, Python, Java, C#.
 
-## Cài đặt (Installation)
+### Nộp bài nhanh
+- Dán code từ bộ nhớ đệm và nộp bài chỉ trong một thao tác.
+- Tự động điền tên file đúng định dạng compiler đang chọn.
 
-### Từ Store
+### Sao chép thông minh
+- Sao chép input / output mẫu sạch, không lẫn ký tự thừa.
+- Sao chép tên file theo định dạng tùy chỉnh (ví dụ: `C01001_TongCuaDaySo.cpp`).
+
+### Gửi đề bài sang IDE
+- Gửi thông tin bài tập trực tiếp đến CP Editor, CPH (VS Code), Caide và các IDE tương thích.
+- Không bắt buộc phải cài Competitive Companion.
+- Tên bài gửi sang IDE có thể tùy chỉnh theo mẫu.
+
+### Phím tắt
+| Tổ hợp phím | Chức năng |
+| :--- | :--- |
+| `Ctrl + Enter` | Nộp bài |
+| `Ctrl + Shift + V` | Dán từ bộ nhớ đệm và nộp bài |
+| `Ctrl + Shift + P` | Dán từ bộ nhớ đệm |
+| `Ctrl + /` | Bật / tắt chú thích dòng |
+| `Ctrl + F` | Tìm kiếm trong code |
+| `F11` | Toàn màn hình |
+
+### Tùy chỉnh định dạng tên
+Truy cập cài đặt tiện ích để thiết lập định dạng tên file và tên bài gửi sang IDE bằng các biến mẫu:
+
+| Biến | Nghĩa |
+| :--- | :--- |
+| `[id]` | Mã bài (ví dụ: `C01001`) |
+| `[ten]` | Tên bài nguyên gốc |
+| `[ten_kd]` | Tên bài không dấu |
+| `[ten_gach]` | Tên bài không dấu, khoảng trắng thay bằng gạch dưới |
+| `[ten_lien]` | Tên bài viết liền, viết hoa đầu mỗi từ |
+
+Ví dụ: mẫu `[id]_[ten_lien]` cho bài "C01001 - TỔNG CỦA DÃY SỐ" sẽ ra `C01001_TongCuaDaySo`.
+
+---
+
+## Cài đặt
+
+### Từ cửa hàng chính thức
 - **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
 - **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
 
-### Thủ công (Manual)
-1.  Tải và giải nén source code.
-2.  Truy cập `chrome://extensions/`, bật **Developer mode**.
-3.  Chọn **Load unpacked** và trỏ tới thư mục extension.
+### Cài thủ công (dành cho phát triển)
+1. Tải và giải nén mã nguồn.
+2. Truy cập `chrome://extensions/`, bật chế độ nhà phát triển.
+3. Chọn "Tải tiện ích chưa đóng gói" và trỏ tới thư mục vừa giải nén.
 
-## Cấu hình (Configuration)
+---
 
-### 🚀 Send to IDE (Khuyến nghị / Recommended)
-Nhấn nút **🚀 Send to IDE** trên trang bài tập để gửi đề trực tiếp đến IDE.
+## Sử dụng với Competitive Companion (tùy chọn)
 
-Mặc định gửi đến các port: `27121` (CPH), `10045` (CP Editor), `10043` (Caide).
+Nếu muốn dùng Competitive Companion song song, cần thêm quy tắc tùy chỉnh trong cài đặt của Competitive Companion:
 
-Có thể cấu hình port trong **Extension popup > IDE Ports**.
-
-> **Không cần cài Competitive Companion!**
-
-### Competitive Companion (Tùy chọn)
-Nếu bạn vẫn muốn sử dụng Competitive Companion, bạn **CẦN** cấu hình như sau:
-
-1.  Mở **Extension options** của Competitive Companion.
-2.  Trong mục **Custom rules**, thêm:
-
-| Match URL | Parser |
+| Trường | Giá trị |
 | :--- | :--- |
-| `^https://code\.ptit\.edu\.vn/(student/question\|beta/problems)/.*` | `CodeforcesProblemParser` |
+| Match URL | `^https://code\.ptit\.edu\.vn/(student/question\|beta/problems)/.*` |
+| Parser | `CodeforcesProblemParser` |
 
-**Copy Regex:**
-```regex
-^https://code\.ptit\.edu\.vn/(student/question|beta/problems)/.*
-```
+---
 
-## Đóng góp (Contribution)
-**Author**: Nguyen Hoang Duc Tam (B25DCCN523)
+## Thông tin tác giả
+
+**Nguyễn Hoàng Đức Tâm** — B25DCCN523
+
+- GitHub: [DucTamIT/codePTITplusplus](https://github.com/DucTamIT/codePTITplusplus)
+- Facebook: [nguyenhoangductam](https://facebook.com/nguyenhoangductam)
+- Email: tambmo22@gmail.com
