@@ -1,5 +1,12 @@
 # codePTIT++
 
+[![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/glnlkofhfeppcndeelhlenfcmlabbcdd.svg?label=%20)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+[![Firefox Add-on Version](https://img.shields.io/amo/v/codePTIT.svg?label=%20)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+[![Firefox Add-on Users](https://img.shields.io/amo/users/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+[![Firefox Add-on Rating](https://img.shields.io/amo/rating/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+
 Tiện ích mở rộng cho trình duyệt, hỗ trợ người dùng học và thi lập trình trên nền tảng [CodePTIT](https://code.ptit.edu.vn) hiệu quả hơn.
 
 ## Tính năng
@@ -20,7 +27,7 @@ Tiện ích mở rộng cho trình duyệt, hỗ trợ người dùng học và 
 - Sao chép tên file theo định dạng tùy chỉnh (ví dụ: `C01001_TongCuaDaySo.cpp`).
 
 ### Gửi đề bài sang IDE
-- Gửi thông tin bài tập trực tiếp đến CP Editor, CPH (VS Code), Caide và các IDE tương thích.
+- Gửi thông tin bài tập trực tiếp đến CP Editor, CPH (VS Code), Caide và [các IDE tương thích](https://github.com/jmerle/competitive-companion#tools-that-use-competitive-companion).
 - Không bắt buộc phải cài Competitive Companion.
 - Tên bài gửi sang IDE có thể tùy chỉnh theo mẫu.
 
