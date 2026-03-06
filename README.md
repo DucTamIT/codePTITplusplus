@@ -1,13 +1,25 @@
 # codePTIT++
 
-[![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/glnlkofhfeppcndeelhlenfcmlabbcdd.svg?label=%20)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
-[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
-[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
-[![Firefox Add-on Version](https://img.shields.io/amo/v/codePTIT.svg?label=%20)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
-[![Firefox Add-on Users](https://img.shields.io/amo/users/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
-[![Firefox Add-on Rating](https://img.shields.io/amo/rating/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
-
 Tiện ích mở rộng cho trình duyệt, hỗ trợ người dùng học và thi lập trình trên nền tảng [CodePTIT](https://code.ptit.edu.vn) hiệu quả hơn.
+
+## Cài đặt
+
+### Từ cửa hàng chính thức
+- **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd) 
+  [![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/glnlkofhfeppcndeelhlenfcmlabbcdd.svg?label=%20)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+  [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+  [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/glnlkofhfeppcndeelhlenfcmlabbcdd.svg)](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
+- **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+  [![Firefox Add-on Version](https://img.shields.io/amo/v/codePTIT.svg?label=%20)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+  [![Firefox Add-on Users](https://img.shields.io/amo/users/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+  [![Firefox Add-on Rating](https://img.shields.io/amo/rating/codePTIT.svg)](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
+
+### Cài thủ công (dành cho phát triển)
+1. Tải và giải nén mã nguồn.
+2. Truy cập `chrome://extensions/`, bật chế độ nhà phát triển.
+3. Chọn "Tải tiện ích chưa đóng gói" và trỏ tới thư mục vừa giải nén.
+
+---
 
 ## Tính năng
 
@@ -53,19 +65,6 @@ Truy cập cài đặt tiện ích để thiết lập định dạng tên file 
 | `[ten_lien]` | Tên bài viết liền, viết hoa đầu mỗi từ |
 
 Ví dụ: mẫu `[id]_[ten_lien]` cho bài "C01001 - TỔNG CỦA DÃY SỐ" sẽ ra `C01001_TongCuaDaySo`.
-
----
-
-## Cài đặt
-
-### Từ cửa hàng chính thức
-- **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/codeptit/glnlkofhfeppcndeelhlenfcmlabbcdd)
-- **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/codeptit/)
-
-### Cài thủ công (dành cho phát triển)
-1. Tải và giải nén mã nguồn.
-2. Truy cập `chrome://extensions/`, bật chế độ nhà phát triển.
-3. Chọn "Tải tiện ích chưa đóng gói" và trỏ tới thư mục vừa giải nén.
 
 ---
 
