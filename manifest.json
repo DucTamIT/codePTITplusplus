@@ -9,21 +9,18 @@
     "storage"
   ],
   "host_permissions": [
-    "http://localhost:*/*"
+    "http://localhost/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": [
+      "background.js"
+    ]
   },
   "browser_specific_settings": {
     "gecko": {
       "id": "codeptit@tamnhd.b25cn523",
-      "strict_min_version": "109.0",
-      "data_collection_permissions": {
-        "required": [
-          "none"
-        ],
-        "optional": []
-      }
+      "strict_min_version": "109.0"
     }
   },
   "icons": {
