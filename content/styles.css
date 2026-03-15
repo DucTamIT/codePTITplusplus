@@ -522,9 +522,10 @@
 
 .title-action-btn {
     margin-left: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 5px 14px;
+    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
     cursor: pointer;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -533,7 +534,9 @@
     vertical-align: middle;
     transition: all var(--cptit-transition);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    font-family: var(--cptit-font);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .title-action-btn:hover {
@@ -548,13 +551,13 @@
     background: rgba(79, 140, 255, 0.12);
 }
 
-.send-ide-btn {
+.send-ide-btn, .view-pdf-btn {
     background: var(--cptit-accent-bg);
     border-color: rgba(79, 140, 255, 0.2);
     color: var(--cptit-accent);
 }
 
-.send-ide-btn:hover {
+.send-ide-btn:hover, .view-pdf-btn:hover {
     background: rgba(79, 140, 255, 0.15);
     border-color: var(--cptit-accent);
     color: var(--cptit-accent-active);
@@ -573,4 +576,390 @@
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.2),
         0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ============================================================
+   8. GITHUB CONTRIBUTION HEATMAP
+   ============================================================ */
+
+.cptit-heatmap-wrapper {
+    position: relative;
+    margin: 20px 0;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: visible;
+}
+
+/* Header */
+.cptit-heatmap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cptit-heatmap-title {
+    font-size: 14px;
+    color: #57606a;
+    font-weight: 400;
+}
+
+/* Graph area */
+.cptit-heatmap-graph {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 4px;
+}
+
+/* Month labels row */
+.cptit-heatmap-months {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 4px;
+}
+
+.cptit-heatmap-day-label-spacer {
+    min-width: 30px;
+    flex-shrink: 0;
+}
+
+.cptit-heatmap-month-labels {
+    display: grid;
+    grid-template-columns: repeat(53, 14px);
+    gap: 0 3px;
+}
+
+.cptit-heatmap-month-label {
+    font-size: 10px;
+    color: #57606a;
+    white-space: nowrap;
+}
+
+/* Grid row (day labels + grid) */
+.cptit-heatmap-grid-row {
+    display: flex;
+}
+
+/* Day labels */
+.cptit-heatmap-day-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 30px;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+
+.cptit-heatmap-day-label {
+    height: 14px;
+    font-size: 10px;
+    color: #57606a;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Grid */
+.cptit-heatmap-grid {
+    display: flex;
+    gap: 3px;
+}
+
+.cptit-heatmap-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Cells */
+.cptit-heatmap-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    outline: 1px solid rgba(27, 31, 35, 0.06);
+    outline-offset: -1px;
+}
+
+.cptit-heatmap-cell-empty {
+    background-color: transparent !important;
+    outline: none;
+}
+
+/* GitHub Heatmap Color Scale */
+.cptit-heatmap-cell.color-scale-0 { background-color: #ebedf0; }
+.cptit-heatmap-cell.color-scale-1 { background-color: #9be9a8; }
+.cptit-heatmap-cell.color-scale-2 { background-color: #40c463; }
+.cptit-heatmap-cell.color-scale-3 { background-color: #30a14e; }
+.cptit-heatmap-cell.color-scale-4 { background-color: #216e39; }
+
+/* Footer / Legend */
+.cptit-heatmap-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.cptit-heatmap-footer .cptit-heatmap-cell {
+    width: 12px;
+    height: 12px;
+    cursor: default;
+}
+
+.cptit-heatmap-legend-label {
+    font-size: 11px;
+    color: #57606a;
+}
+
+/* Custom Tooltip */
+.cptit-heatmap-tooltip {
+    position: absolute;
+    padding: 6px 10px;
+    background: #24292f;
+    color: #fff;
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    line-height: 1.4;
+}
+
+.cptit-heatmap-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #24292f;
+}
+
+/* ============================================================
+   9. FEATURE ANNOUNCEMENT TOAST
+   ============================================================ */
+
+.cptit-feature-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+.cptit-feature-toast.visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.cptit-feature-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: #24292f;
+    color: #e6edf3;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.12);
+    font-size: 14px;
+    max-width: 400px;
+    backdrop-filter: blur(8px);
+}
+
+.cptit-feature-toast-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.cptit-feature-toast-text {
+    line-height: 1.5;
+}
+
+.cptit-feature-toast-text strong {
+    color: #58a6ff;
+}
+
+.cptit-feature-toast-link {
+    color: #58a6ff !important;
+    text-decoration: none !important;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cptit-feature-toast-link:hover {
+    text-decoration: underline !important;
+    color: #79c0ff !important;
+}
+
+.cptit-feature-toast-close {
+    background: none;
+    border: none;
+    color: #8b949e;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.cptit-feature-toast-close:hover {
+    color: #e6edf3;
+}
+
+/* ============================================================
+   10. NEW FEATURE DOT BADGE
+   ============================================================ */
+
+.cptit-new-badge {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background: #2ea043;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(46, 160, 67, 0.7);
+    animation: cptit-dot-pulse 1.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes cptit-dot-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 160, 67, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(46, 160, 67, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 160, 67, 0); }
+}
+
+/* ============================================================
+   11. CUSTOM HOVER TOOLTIPS FOR ICON BUTTONS
+   ============================================================ */
+
+/* Shared tooltip base for all icon buttons */
+.title-action-btn,
+.editor-icon-btn,
+.cm-theme-toggle {
+    position: relative;
+}
+
+.title-action-btn::after,
+.editor-icon-btn::after,
+.cm-theme-toggle::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    padding: 5px 10px;
+    background: #24292f;
+    color: #e6edf3;
+    font-size: 12px;
+    font-weight: 400;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    line-height: 1.4;
+}
+
+.title-action-btn:hover::after,
+.editor-icon-btn:hover::after,
+.cm-theme-toggle:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* Arrow pointing down */
+.title-action-btn::before,
+.editor-icon-btn::before,
+.cm-theme-toggle::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #24292f;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 9999;
+}
+
+.title-action-btn:hover::before,
+.editor-icon-btn:hover::before,
+.cm-theme-toggle:hover::before {
+    opacity: 1;
+}
+
+/* ============================================================
+   12. HIDE SOLVED PROBLEMS TOGGLE
+   ============================================================ */
+
+.cptit-hide-solved {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.cptit-toggle-label {
+    font-size: 13px;
+    color: #555;
+    user-select: none;
+    cursor: pointer;
+}
+
+.cptit-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.cptit-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cptit-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #ccc;
+    border-radius: 20px;
+    transition: background 0.25s ease;
+}
+
+.cptit-toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.cptit-toggle-switch input:checked + .cptit-toggle-slider {
+    background: #a7453c;
+}
+
+.cptit-toggle-switch input:checked + .cptit-toggle-slider::before {
+    transform: translateX(16px);
 }

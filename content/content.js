@@ -375,6 +375,86 @@
     }
 
 
+    // --- END OF CODE EDITOR ---
+
+// --- PROBLEM STATUS ICONS ---
+
+function getProblemStatus() {
+    let status = 'NONE';
+    
+    if (isBetaSite()) {
+        const historyContainer = document.querySelector('.card-content');
+        if (historyContainer && historyContainer.textContent.includes('Lịch sử nộp bài:')) {
+            const historyElements = historyContainer.querySelectorAll('div > div > a > span');
+            if (historyElements.length > 0) {
+                status = 'FAIL'; // Default to FAIL if there's history
+                for (let el of historyElements) {
+                    if (el.textContent.trim() === 'AC') {
+                        status = 'AC';
+                        break;
+                    }
+                }
+            }
+        }
+    } else {
+        // Original site typically has a table of submissions further down the page
+        const tables = document.querySelectorAll('table');
+        let historyTable = null;
+        for (let table of tables) {
+            if (table.textContent.includes('Lịch sử nộp bài') || table.textContent.includes('Kết quả nộp bài cũ')) {
+                historyTable = table;
+                break;
+            } else if (table.querySelector('th') && table.querySelector('th').textContent.includes('Trạng thái')) {
+                 // Sometime original tables might just have typical columns like Submit ID, Date, Name, Status, Runtime, Memory, Language
+                 historyTable = table;
+                 break; // Best effort guess it's the history table if it contains a status column
+            }
+        }
+
+        // Alternative explicit check on original site since the problem page itself might have them rendered directly in the standard problem tables
+        const trs = document.querySelectorAll('.table-responsive tbody tr');
+        if (trs.length > 0) {
+             let hasHistory = false;
+             for (let tr of trs) {
+                 const statusCell = tr.querySelector('td.text-center a span, td[id^="status_"] span, td span[style*="color"]');
+                 if (statusCell) {
+                     hasHistory = true;
+                     if (statusCell.textContent.trim() === 'AC') {
+                         status = 'AC';
+                         break;
+                     }
+                 }
+             }
+             if (hasHistory && status === 'NONE') {
+                 status = 'FAIL';
+             }
+        }
+    }
+    
+    return status;
+}
+
+function injectStatusIcon() {
+    const titleElem = getTitleElement();
+    if (!titleElem || titleElem.querySelector('.problem-status-icon')) return;
+
+    const status = getProblemStatus();
+
+    if (status !== 'NONE') {
+        const icon = document.createElement('i');
+        icon.className = status === 'AC' ? 'fa fa-check-circle problem-status-icon' : 'fa fa-frown-o problem-status-icon';
+        icon.style.marginRight = '8px';
+        icon.style.color = status === 'AC' ? '#19be6b' : '#ed4014'; // Match origin/beta exact green and red colors
+        icon.style.fontSize = '24px'; // Match the size of the SVGs
+        icon.style.verticalAlign = 'middle';
+        icon.style.display = 'inline-flex';
+        icon.style.alignItems = 'center';
+        
+        titleElem.prepend(icon);
+    }
+}
+
+// --- VIEW AS PDF FEATURE ---
     // --- Core Logic ---
 
     async function handlePasteAndSubmit(fileInput, submitAction, getCompilerText) {
@@ -585,6 +665,181 @@
 
     // --- Title Buttons ---
 
+    function viewAsPDF() {
+        const id = getProblemId();
+        const titleElem = getTitleElement();
+        if (!titleElem) return;
+
+        let rawTitle = getCleanTitle(titleElem, id);
+        // Sometimes rawTitle might include the ID if the parsing isn't perfect, let's clean it just in case
+        if (id && rawTitle.startsWith(id)) {
+             rawTitle = rawTitle.substring(id.length).replace(/^[\s\-\:]+/, '');
+        }
+
+        const { timeLimit, memoryLimitMb } = getLimits();
+
+        let contentClone;
+        if (isBetaSite()) {
+            const container = document.querySelector('.problem-container');
+            if (container) contentClone = container.cloneNode(true);
+        } else {
+            const submitDes = document.querySelector('.submit__des');
+            if (submitDes) contentClone = submitDes.cloneNode(true);
+        }
+
+        if (!contentClone) {
+            showNotification('Không tìm thấy nội dung bài toán', 'error');
+            return;
+        }
+
+        // Clean up buttons in the clone
+        contentClone.querySelectorAll('button, .copy-btn, .copy-title-btn, .send-ide-btn, .view-pdf-btn, [class*="copy"]').forEach(el => el.remove());
+
+        // Clean up duplicate limits inherently inside Beta's problem-container
+        contentClone.querySelectorAll('p, div, span').forEach(el => {
+            if (el.children.length === 0) {
+                const text = el.textContent.trim();
+                if (text.startsWith('Giới hạn thời gian:') || text.startsWith('Giới hạn bộ nhớ:')) {
+                    el.remove();
+                }
+            }
+        });
+
+        // Create an iframe for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+
+        // Copy style tag rules from parent to preserve MathJax and other inline scripts
+        // Exclude <link rel="stylesheet"> to avoid inheriting broken Bootstrap/framework styles that ruin print logic on original
+        let styleHTML = '';
+        document.querySelectorAll('style').forEach(node => {
+            styleHTML += node.outerHTML;
+        });
+
+        // Add custom print styles
+        styleHTML += `
+            <style>
+                @media print {
+                    @page { 
+                        size: A4; 
+                        margin: 20mm; 
+                    }
+                    body { 
+                        background: #fff !important; 
+                        color: #000 !important; 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+                        font-size: 16px !important; 
+                    }
+                    * { 
+                        background: transparent !important; 
+                        color: #000 !important; 
+                        box-shadow: none !important; 
+                        text-shadow: none !important; 
+                    }
+                    .problem-header {
+                        text-align: center;
+                        margin-bottom: 25px;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #eee;
+                    }
+                    .problem-title {
+                        font-size: 24px !important;
+                        font-weight: bold !important;
+                        margin-bottom: 10px;
+                    }
+                    .problem-limits {
+                        font-size: 16px !important;
+                        color: #555 !important;
+                        display: flex;
+                        justify-content: center;
+                        gap: 20px;
+                    }
+                    .problem-content {
+                        font-size: 16px !important;
+                        line-height: 1.6 !important;
+                        width: 100%;
+                        overflow-wrap: break-word;
+                    }
+                    /* Restore standard spacing! Only force 16px on spans to kill 13pt without destroying sub/sup/math or line heights */
+                    .problem-content p, .problem-content div, .problem-content li, .problem-content td {
+                        font-size: 16px !important;
+                        line-height: 1.6 !important;
+                    }
+                    .problem-content span {
+                        font-size: 16px !important;
+                    }
+                    .problem-content * {
+                        max-width: 100% !important;
+                    }
+                    img, svg, table, pre, code {
+                        max-width: 100% !important;
+                        page-break-inside: avoid;
+                    }
+                    pre, code {
+                        border: 1px solid #ddd !important;
+                        padding: 10px !important;
+                        border-radius: 4px;
+                        white-space: pre-wrap !important;
+                        word-break: break-word !important;
+                        font-family: Consolas, 'Courier New', monospace !important;
+                        font-size: 14px !important;
+                        background: #f8f9fa !important;
+                    }
+                    table {
+                        border-collapse: collapse !important;
+                        margin: 15px 0 !important;
+                        width: auto !important;
+                        max-width: 100% !important;
+                    }
+                }
+            </style>
+        `;
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${id ? id + ' - ' : ''}${rawTitle}</title>
+                ${styleHTML}
+            </head>
+            <body>
+                <div class="problem-header">
+                    <div class="problem-title">${id ? id + ' - ' : ''}${rawTitle}</div>
+                    <div class="problem-limits">
+                        <span>Giới hạn thời gian: ${timeLimit}</span>
+                        <span>Giới hạn bộ nhớ: ${memoryLimitMb}</span>
+                    </div>
+                </div>
+                <div class="problem-content">
+                    ${contentClone.innerHTML}
+                </div>
+            </body>
+            </html>
+        `;
+
+        doc.write(html);
+        doc.close();
+
+        // Wait a bit for styles to load, then print and remove iframe
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+        }, 500);
+    }
+
     function addCopyTitleButton() {
         const id = getProblemId();
         const titleElem = getTitleElement();
@@ -592,8 +847,11 @@
         if (!titleElem || titleElem.querySelector('.copy-title-btn')) return;
 
         const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
         copyBtn.className = 'title-action-btn copy-title-btn';
-        copyBtn.textContent = 'Copy tên file';
+        copyBtn.innerHTML = '<i class="fa fa-clone"></i>';
+        copyBtn.title = 'Copy tên file (Ctrl+Shift+C)';
+        copyBtn.style.marginLeft = '12px';
 
         copyBtn.onclick = async (e) => {
             e.preventDefault();
@@ -616,14 +874,33 @@
         // Add Send to IDE button
         if (!titleElem.querySelector('.send-ide-btn')) {
             const sendBtn = document.createElement('button');
+            sendBtn.type = 'button';
             sendBtn.className = 'title-action-btn send-ide-btn';
-            sendBtn.textContent = 'Gửi đề bài';
+            sendBtn.innerHTML = '<i class="fa fa-paper-plane"></i>';
+            sendBtn.title = 'Gửi đề bài (Ctrl+Shift+X)';
+        
             sendBtn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 sendToIDE();
             };
             titleElem.appendChild(sendBtn);
+        }
+
+        // Add View as PDF button
+        if (!titleElem.querySelector('.view-pdf-btn')) {
+            const pdfBtn = document.createElement('button');
+            pdfBtn.type = 'button';
+            pdfBtn.className = 'title-action-btn view-pdf-btn';
+            pdfBtn.innerHTML = '<i class="fa fa-file-pdf-o"></i>';
+            pdfBtn.title = 'Xem dưới dạng PDF';
+        
+            pdfBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                viewAsPDF();
+            };
+            titleElem.appendChild(pdfBtn);
         }
     }
 
@@ -996,6 +1273,453 @@
         });
     }
 
+    // --- GitHub Contribution Graph (Heatmap) ---
+
+    async function fetchUsername() {
+        const urlOptions = ['/user/profile', '/profile'];
+        for (const url of urlOptions) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const html = await res.text();
+                // We're looking for the username pattern B2... or something similar.
+                // We saw it in `<p class="nav__profile__menu__code">B25DCCN523</p>` or in the text.
+                const match = html.match(/>([A-Z0-9_]{8,12})</);
+                if (match) {
+                     return match[1];
+                }
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const pElems = doc.querySelectorAll('p');
+                for (let p of pElems) {
+                     if (p.className.includes('code') || String(p.textContent).match(/^[A-Z0-9]+$/)) {
+                         const matchCode = p.textContent.trim().match(/^([A-Z0-9_]{8,12})$/);
+                         if(matchCode) return matchCode[1];
+                     }
+                }
+                // Try to find the B25DCCN523 inside spans
+                const spans = doc.querySelectorAll('span');
+                for (let span of spans) {
+                     const t = span.textContent.trim();
+                     if (t.match(/^[B|N][0-9]{2}[A-Z]+[0-9]{3}$/i)) { // standard ptit username regex
+                          return t;
+                     }
+                }
+            } catch (e) {
+                console.error('[cPTIT++] Error fetching username from', url, e);
+            }
+        }
+        // Fallback for beta site - check local storage or DOM
+        const betaProfile = document.querySelector('.ant-dropdown-link img');
+        if (betaProfile && betaProfile.src.includes('?name=')) {
+             // Beta doesn't cleanly expose username, but maybe we can just get it globally if the user is in beta
+             try {
+                const token = localStorage.getItem('access_token');
+                const headers = { 'Accept': 'application/json, text/plain, */*' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                
+                const req = await fetch('/api/user/info', { headers });
+                if (req.ok) {
+                   const json = await req.json();
+                   if (json && json.data && json.data.username) return json.data.username;
+                }
+             } catch(e){}
+        }
+
+        // Just ask the user to navigate back if we can't find it
+        return null;
+    }
+
+    async function fetchAllSubmissions(username) {
+        if (!username) return [];
+        try {
+            const token = localStorage.getItem('access_token');
+            const headers = { 'Accept': 'application/json, text/plain, */*' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            
+            const firstPageRes = await fetch(`/api/solutions?username=${username}&page=1`, { headers });
+            if (!firstPageRes.ok) return [];
+            const firstPageData = await firstPageRes.json();
+            
+            let allData = firstPageData.data || [];
+            const lastPage = firstPageData.last_page || 1;
+
+            if (lastPage > 1) {
+                const promises = [];
+                for (let i = 2; i <= lastPage; i++) {
+                    promises.push(
+                        fetch(`/api/solutions?username=${username}&page=${i}`, { headers })
+                            .then(res => res.json())
+                            .catch(() => ({ data: [] }))
+                    );
+                }
+                const subsequentPages = await Promise.all(promises);
+                for (const page of subsequentPages) {
+                     if (page && page.data) {
+                         allData = allData.concat(page.data);
+                     }
+                }
+            }
+            return allData;
+        } catch(e) {
+            console.error('[cPTIT++] Error fetching all submissions:', e);
+            return [];
+        }
+    }
+
+    function processSubmissions(submissions) {
+        const heatmapData = {};
+        for (const sub of submissions) {
+            // expected "created_at": "2026-03-15 12:49:06"
+            if (!sub.created_at) continue;
+            const dateStr = sub.created_at.split(' ')[0]; // YYYY-MM-DD
+            if (!heatmapData[dateStr]) {
+                heatmapData[dateStr] = 0;
+            }
+            heatmapData[dateStr]++;
+        }
+        return heatmapData;
+    }
+
+    function renderHeatmap(submissionsData) {
+        // Prevent multiple injections
+        if (document.getElementById('cptit-heatmap-container')) return;
+
+        const MONTHS_VI = ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'];
+        const DAYS_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+        const container = document.createElement('div');
+        container.id = 'cptit-heatmap-container';
+        container.className = 'cptit-heatmap-wrapper';
+
+        // --- Header with title and total count ---
+        const totalSubmissions = Object.values(submissionsData).reduce((a, b) => a + b, 0);
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'cptit-heatmap-header';
+        headerDiv.innerHTML = `<span class="cptit-heatmap-title">${totalSubmissions} submissions trong năm qua</span>`;
+        container.appendChild(headerDiv);
+
+        // --- Graph area (day labels + month labels + grid) ---
+        const graphArea = document.createElement('div');
+        graphArea.className = 'cptit-heatmap-graph';
+
+        // Calculate date range: end on today, go back ~1 year
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // End of graph is the Saturday of today's week (or today if today is Saturday)
+        const endDay = new Date(today);
+        endDay.setDate(endDay.getDate() + (6 - endDay.getDay()));
+        
+        // Start exactly 52 weeks before the Sunday of this week
+        const startDay = new Date(endDay);
+        startDay.setDate(startDay.getDate() - (52 * 7) - 6); // Go back 52 full weeks + remaining days to Sunday
+        
+        // Calculate total weeks
+        const totalDays = Math.ceil((endDay - startDay) / (1000 * 60 * 60 * 24)) + 1;
+        const totalWeeks = Math.ceil(totalDays / 7);
+
+        // --- Month labels row ---
+        const monthRow = document.createElement('div');
+        monthRow.className = 'cptit-heatmap-months';
+        const monthSpacer = document.createElement('div');
+        monthSpacer.className = 'cptit-heatmap-day-label-spacer';
+        monthRow.appendChild(monthSpacer);
+
+        // Track which months appear in which week columns
+        let tempDate = new Date(startDay);
+        let lastMonth = -1;
+        const monthPositions = [];
+        for (let week = 0; week < totalWeeks; week++) {
+            const weekStart = new Date(tempDate);
+            const m = weekStart.getMonth();
+            if (m !== lastMonth) {
+                monthPositions.push({ month: m, week: week });
+                lastMonth = m;
+            }
+            tempDate.setDate(tempDate.getDate() + 7);
+        }
+
+        // Create month label spans positioned over the grid
+        const monthLabelsContainer = document.createElement('div');
+        monthLabelsContainer.className = 'cptit-heatmap-month-labels';
+        monthLabelsContainer.style.gridTemplateColumns = `repeat(${totalWeeks}, 14px)`;
+        for (const { month, week } of monthPositions) {
+            const label = document.createElement('span');
+            label.className = 'cptit-heatmap-month-label';
+            label.textContent = MONTHS_VI[month];
+            label.style.gridColumn = String(week + 1);
+            monthLabelsContainer.appendChild(label);
+        }
+        monthRow.appendChild(monthLabelsContainer);
+        graphArea.appendChild(monthRow);
+
+        // --- Main grid area (day labels + cells) ---
+        const gridRow = document.createElement('div');
+        gridRow.className = 'cptit-heatmap-grid-row';
+
+        // Day labels column (Mon, Wed, Fri)
+        const dayLabels = document.createElement('div');
+        dayLabels.className = 'cptit-heatmap-day-labels';
+        for (let i = 0; i < 7; i++) {
+            const label = document.createElement('span');
+            label.className = 'cptit-heatmap-day-label';
+            if (i === 1 || i === 3 || i === 5) {
+                label.textContent = DAYS_VI[i];
+            }
+            dayLabels.appendChild(label);
+        }
+        gridRow.appendChild(dayLabels);
+
+        // Grid of cells
+        const grid = document.createElement('div');
+        grid.className = 'cptit-heatmap-grid';
+
+        // Tooltip element (shared, repositioned on hover)
+        const tooltip = document.createElement('div');
+        tooltip.className = 'cptit-heatmap-tooltip';
+        tooltip.style.display = 'none';
+        container.appendChild(tooltip);
+
+        let currentDate = new Date(startDay);
+        for (let week = 0; week < totalWeeks; week++) {
+            const weekColumn = document.createElement('div');
+            weekColumn.className = 'cptit-heatmap-week';
+
+            for (let day = 0; day < 7; day++) {
+                 const d = new Date(currentDate);
+                 const dateString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                 
+                 const cell = document.createElement('div');
+                 cell.className = 'cptit-heatmap-cell';
+                 
+                 if (d > today) {
+                     cell.classList.add('cptit-heatmap-cell-empty');
+                 } else {
+                     const count = submissionsData[dateString] || 0;
+                     cell.dataset.date = dateString;
+                     cell.dataset.count = count;
+                     
+                     if (count === 0) cell.classList.add('color-scale-0');
+                     else if (count <= 2) cell.classList.add('color-scale-1');
+                     else if (count <= 5) cell.classList.add('color-scale-2');
+                     else if (count <= 10) cell.classList.add('color-scale-3');
+                     else cell.classList.add('color-scale-4');
+
+                     // Custom tooltip on hover
+                     cell.addEventListener('mouseenter', (e) => {
+                         const c = parseInt(e.target.dataset.count || 0);
+                         const dateParts = e.target.dataset.date.split('-');
+                         const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                         tooltip.innerHTML = `<strong>${c} submission${c !== 1 ? 's' : ''}</strong> ngày ${displayDate}`;
+                         tooltip.style.display = 'block';
+                         const rect = e.target.getBoundingClientRect();
+                         const containerRect = container.getBoundingClientRect();
+                         tooltip.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+                         tooltip.style.top = (rect.top - containerRect.top - 36) + 'px';
+                     });
+                     cell.addEventListener('mouseleave', () => {
+                         tooltip.style.display = 'none';
+                     });
+                 }
+
+                 weekColumn.appendChild(cell);
+                 currentDate.setDate(currentDate.getDate() + 1);
+            }
+            grid.appendChild(weekColumn);
+        }
+
+        gridRow.appendChild(grid);
+        graphArea.appendChild(gridRow);
+        container.appendChild(graphArea);
+
+        // --- Footer: Color Legend ---
+        const footer = document.createElement('div');
+        footer.className = 'cptit-heatmap-footer';
+        footer.innerHTML = `
+            <span class="cptit-heatmap-legend-label">Ít</span>
+            <div class="cptit-heatmap-cell color-scale-0"></div>
+            <div class="cptit-heatmap-cell color-scale-1"></div>
+            <div class="cptit-heatmap-cell color-scale-2"></div>
+            <div class="cptit-heatmap-cell color-scale-3"></div>
+            <div class="cptit-heatmap-cell color-scale-4"></div>
+            <span class="cptit-heatmap-legend-label">Nhiều</span>
+        `;
+        container.appendChild(footer);
+
+        // Inject into the page
+        const isBeta = window.location.href.includes('/beta');
+        if (isBeta) {
+            waitForElement('.body .part-left .body-header', (header) => {
+                // Insert before the problem-container (table area) so it appears above the table
+                const problemContainer = header.querySelector('.problem-container');
+                if (problemContainer) {
+                     header.insertBefore(container, problemContainer);
+                } else {
+                     // Fallback: insert after the underline div, before table
+                     const underline = header.querySelector('.underline');
+                     if (underline && underline.nextSibling) {
+                         header.insertBefore(container, underline.nextSibling);
+                     } else {
+                         header.appendChild(container);
+                     }
+                }
+            });
+        } else {
+            waitForElement('.historywork', (historyWork) => {
+                historyWork.insertBefore(container, historyWork.firstChild);
+            });
+            // Fallback for full page wrapper if .historywork isn't specific
+            waitForElement('.wrapper > .wrapper', (wrapper) => {
+                 if (!document.getElementById('cptit-heatmap-container')) {
+                     wrapper.insertBefore(container, wrapper.firstChild);
+                 }
+            }, 5000);
+        }
+    }
+
+    async function initHeatmap() {
+        console.log('[cPTIT++] Initializing Heatmap...');
+        // Try getting username from DOM first if we are on old site
+        let username = null;
+        
+        const ptitCodeMatch = document.body.innerHTML.match(/Tài khoản[^<]*<span[^>]*>(B[0-9]{2}[A-Z]+[0-9]{3})<\/span>/i) || 
+                              document.body.innerHTML.match(/(B[0-9]{2}[A-Z]+[0-9]{3})/i);
+        if (ptitCodeMatch) {
+             username = ptitCodeMatch[1];
+        } else {
+             username = await fetchUsername();
+        }
+
+        if (username) {
+             console.log('[cPTIT++] Found username:', username);
+             const subs = await fetchAllSubmissions(username);
+             const processed = processSubmissions(subs);
+             renderHeatmap(processed);
+        } else {
+             console.warn('[cPTIT++] Username not found, cannot render heatmap.');
+        }
+    }
+
+    // Helper: detect history page (works for both URL-based original site and DOM-based Beta SPA tabs)
+    function isHistoryPage() {
+        // URL check (works for original site and direct Beta URL)
+        if (window.location.href.includes('/history')) return true;
+        // DOM check for Beta SPA: look for the "Lịch sử" heading
+        const headings = document.querySelectorAll('.body-header h2');
+        for (const h of headings) {
+            if (h.textContent.trim() === 'Lịch sử') return true;
+        }
+        return false;
+    }
+
+    // --- Hide Solved Problems Toggle ---
+
+    function initHideSolvedToggle() {
+        // Don't double-inject
+        if (document.getElementById('cptit-hide-solved-toggle')) return;
+
+        const isOld = window.location.href.includes('/student/question') && !window.location.href.includes('/student/question/');
+        const isBetaList = isProblemListPage();
+
+        if (!isOld && !isBetaList) return;
+
+        // Create toggle container
+        const toggleContainer = document.createElement('div');
+        toggleContainer.id = 'cptit-hide-solved-toggle';
+        toggleContainer.className = 'cptit-hide-solved';
+        toggleContainer.innerHTML = `
+            <label class="cptit-toggle-switch">
+                <input type="checkbox" id="cptit-hide-solved-cb">
+                <span class="cptit-toggle-slider"></span>
+            </label>
+            <span class="cptit-toggle-label">Ẩn bài đã giải</span>
+        `;
+
+        // Insert into page
+        if (isOld) {
+            const topNav = document.querySelector('.ques__nav__top');
+            if (topNav) {
+                toggleContainer.style.marginLeft = 'auto';
+                topNav.style.display = 'flex';
+                topNav.style.alignItems = 'center';
+                topNav.appendChild(toggleContainer);
+            } else return;
+        } else {
+            // Beta: insert before the table, inside the search area
+            const searchContainer = document.querySelector('.search-container');
+            const problemContainer = document.querySelector('.problem-container');
+            if (searchContainer) {
+                // Place next to the search box
+                searchContainer.style.display = 'flex';
+                searchContainer.style.alignItems = 'center';
+                searchContainer.style.gap = '12px';
+                searchContainer.appendChild(toggleContainer);
+            } else if (problemContainer) {
+                // Fallback: before the problem container
+                problemContainer.parentNode.insertBefore(toggleContainer, problemContainer);
+            } else return;
+        }
+
+        const checkbox = document.getElementById('cptit-hide-solved-cb');
+
+        function applySolvedVisibility(hide) {
+            if (isOld) {
+                // Original site: solved rows have class "bg--10th" (green background)
+                document.querySelectorAll('.ques__table tbody tr.bg--10th').forEach(row => {
+                    row.style.display = hide ? 'none' : '';
+                });
+            } else {
+                // Beta site: solved rows have anticon-check-circle in first td
+                document.querySelectorAll('.ant-table-tbody tr').forEach(row => {
+                    const checkIcon = row.querySelector('.anticon-check-circle');
+                    if (checkIcon) {
+                        row.style.display = hide ? 'none' : '';
+                    }
+                });
+            }
+        }
+
+        // Load saved state
+        const storageAPI = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : (typeof browser !== 'undefined' && browser.storage ? browser.storage.local : null);
+        if (storageAPI) {
+            storageAPI.get({ cptit_hide_solved: false }, (result) => {
+                const hide = result.cptit_hide_solved;
+                checkbox.checked = hide;
+                applySolvedVisibility(hide);
+            });
+        }
+
+        checkbox.addEventListener('change', () => {
+            const hide = checkbox.checked;
+            applySolvedVisibility(hide);
+            if (storageAPI) {
+                storageAPI.set({ cptit_hide_solved: hide });
+            }
+        });
+
+        // Observe table changes (pagination, filtering) to re-apply
+        const tableContainer = isOld
+            ? document.querySelector('.ques__table__wrapper')
+            : document.querySelector('.ant-table-wrapper');
+        if (tableContainer) {
+            const tableObserver = new MutationObserver(() => {
+                if (checkbox.checked) {
+                    applySolvedVisibility(true);
+                }
+            });
+            tableObserver.observe(tableContainer, { childList: true, subtree: true });
+        }
+    }
+
+    function isProblemListPage() {
+        // Beta: check for "Danh sách bài tập" heading or problem table
+        const headings = document.querySelectorAll('.body-header h2');
+        for (const h of headings) {
+            if (h.textContent.trim() === 'Danh sách bài tập') return true;
+        }
+        return false;
+    }
+
     // --- Site Specific Implementations ---
 
     function customizeOldSiteUI() {
@@ -1052,14 +1776,25 @@
             injectCompetitiveCompanionData();
 
             addCopyTitleButton();
+            injectStatusIcon();
 
             addCopyButtons();
         });
     }
 
     function initBetaSite() {
+        // Since Beta doesn't package FontAwesome by default, we inject it for our icons
+        if (!document.getElementById('injected-fontawesome')) {
+            const fontAwesomeLink = document.createElement('link');
+            fontAwesomeLink.id = 'injected-fontawesome';
+            fontAwesomeLink.rel = 'stylesheet';
+            fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
+            document.head.appendChild(fontAwesomeLink);
+        }
+
         // Always try — these have their own idempotency checks
         addCopyTitleButton();
+        injectStatusIcon();
         injectCompetitiveCompanionData();
         addCopyButtons();
 
@@ -1167,6 +1902,138 @@
         lastProblemId = currentId;
     }
 
+    // --- Heatmap Feature Promotion ---
+
+    const HEATMAP_SEEN_KEY = 'cptit_heatmap_seen';
+    const HEATMAP_VERSION = '0.4.2';
+
+    function getStorageAPI() {
+        // Use chrome.storage if available, fallback to browser.storage (Firefox)
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) return chrome.storage.local;
+        if (typeof browser !== 'undefined' && browser.storage && browser.storage.local) return browser.storage.local;
+        return null;
+    }
+
+    async function isHeatmapSeen() {
+        const api = getStorageAPI();
+        if (!api) return false;
+        return new Promise(resolve => {
+            api.get(HEATMAP_SEEN_KEY, (result) => {
+                resolve(result[HEATMAP_SEEN_KEY] === HEATMAP_VERSION);
+            });
+        });
+    }
+
+    function markHeatmapSeen() {
+        const api = getStorageAPI();
+        if (!api) return;
+        api.set({ [HEATMAP_SEEN_KEY]: HEATMAP_VERSION });
+    }
+
+    async function notifyHeatmapFeature() {
+        const seen = await isHeatmapSeen();
+        if (seen) return;
+
+        // Only show on problem pages (not on history itself)
+        if (isHistoryPage()) return;
+
+        setTimeout(() => {
+            // Don't double-inject
+            if (document.querySelector('.cptit-feature-toast')) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'cptit-feature-toast';
+            
+            const isBeta = window.location.href.includes('/beta');
+            const historyUrl = isBeta ? '/beta/history' : '/student/history';
+            
+            toast.innerHTML = `
+                <div class="cptit-feature-toast-content">
+                    <span class="cptit-feature-toast-icon">📊</span>
+                    <div class="cptit-feature-toast-text">
+                        <strong>Mới!</strong> Xem biểu đồ hoạt động của bạn
+                        <a href="${historyUrl}" class="cptit-feature-toast-link">tại trang Lịch sử →</a>
+                    </div>
+                    <button class="cptit-feature-toast-close" title="Đóng">×</button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.add('visible'));
+
+            const dismiss = () => {
+                markHeatmapSeen();
+                toast.classList.remove('visible');
+                setTimeout(() => toast.remove(), 400);
+            };
+
+            toast.querySelector('.cptit-feature-toast-close').onclick = dismiss;
+            toast.querySelector('.cptit-feature-toast-link').addEventListener('click', () => {
+                markHeatmapSeen();
+            });
+
+            setTimeout(dismiss, 10000);
+        }, 2000);
+    }
+
+    function injectBadgeToDom() {
+        // Don't inject if already there
+        if (document.querySelector('.cptit-new-badge')) return;
+
+        const isBeta = window.location.href.includes('/beta');
+        
+        if (isBeta) {
+            const navItems = document.querySelectorAll('.nav-item');
+            for (const item of navItems) {
+                if (item.textContent.includes('Lịch sử')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'cptit-new-badge';
+                    item.style.position = 'relative';
+                    item.appendChild(badge);
+                    break;
+                }
+            }
+        } else {
+            const navItems = document.querySelectorAll('.nav__menu__item a');
+            for (const link of navItems) {
+                if (link.textContent.trim() === 'Lịch sử' || (link.href && link.href.includes('/history'))) {
+                    const badge = document.createElement('span');
+                    badge.className = 'cptit-new-badge';
+                    link.style.position = 'relative';
+                    link.appendChild(badge);
+                    break;
+                }
+            }
+        }
+    }
+
+    async function addHistoryBadge() {
+        const seen = await isHeatmapSeen();
+        if (seen) return;
+
+        // When they visit the history page, mark as seen
+        if (isHistoryPage()) {
+            markHeatmapSeen();
+            return;
+        }
+
+        // Inject immediately + retry for SPA
+        injectBadgeToDom();
+        // Also retry after a delay for SPA sites where DOM loads late
+        setTimeout(injectBadgeToDom, 1500);
+        setTimeout(injectBadgeToDom, 3000);
+    }
+
+    // --- Tooltip Enhancement: title → data-tooltip ---
+    function convertTitlesToTooltips() {
+        document.querySelectorAll('.title-action-btn[title], .editor-icon-btn[title], .cm-theme-toggle[title]').forEach(btn => {
+            btn.dataset.tooltip = btn.title;
+            btn.removeAttribute('title');
+        });
+    }
+    // Run periodically since buttons are injected dynamically
+    setInterval(convertTitlesToTooltips, 1000);
+
     // --- Main Entry Point ---
 
     // Setup keyboard shortcuts globally
@@ -1175,6 +2042,17 @@
     // Remove banner on ALL /student/ pages (listings, rankings, etc.)
     if (window.location.href.includes(CONFIG.oldSiteBase)) {
         customizeOldSiteUI();
+    }
+
+    // Hide solved problems toggle (original site - direct load)
+    initHideSolvedToggle();
+
+    // Heatmap feature promotion (toast + badge)
+    notifyHeatmapFeature();
+    addHistoryBadge();
+
+    if (isHistoryPage()) {
+        initHeatmap();
     }
 
     if (window.location.href.includes(CONFIG.oldUrlPart)) {
@@ -1193,12 +2071,36 @@
 
         // Observe for navigation/DOM changes (debounced to avoid excessive calls)
         let debounceTimer = null;
+        const isBeta = window.location.href.includes('/beta');
         const observer = new MutationObserver(() => {
             if (debounceTimer) clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 if (isBetaSite()) {
                     checkNavigationChange();
                     initBetaSite();
+                }
+                
+                // These need to run on ALL Beta pages, not just /beta/problems/
+                if (isBeta) {
+                    // SPA: try to inject hide-solved toggle on problem list
+                    initHideSolvedToggle();
+
+                    if (isHistoryPage()) {
+                        // User is on history tab: render heatmap, remove badge, mark seen
+                        if (!document.getElementById('cptit-heatmap-container')) {
+                            initHeatmap();
+                        }
+                        const badge = document.querySelector('.cptit-new-badge');
+                        if (badge) badge.remove();
+                        markHeatmapSeen();
+                    } else {
+                        // Not on history: inject badge if not seen
+                        isHeatmapSeen().then(seen => {
+                            if (!seen && !document.querySelector('.cptit-new-badge')) {
+                                injectBadgeToDom();
+                            }
+                        });
+                    }
                 }
             }, 300);
         });
