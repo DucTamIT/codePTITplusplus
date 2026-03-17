@@ -937,6 +937,9 @@
                     <button class="editor-icon-btn secondary" id="settingsBtn" title="Cài đặt">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     </button>
+                    <button class="editor-icon-btn secondary" id="themeBtn" title="Chuyển sang sáng/tối">
+                        <!-- SVG will be injected by JS -->
+                    </button>
                     <button class="editor-icon-btn secondary" id="guideBtn" title="Hướng dẫn sử dụng">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     </button>
@@ -1068,18 +1071,15 @@
         settingsBtn.onclick = () => openSettings();
         guideBtn.onclick = () => window.open('https://www.youtube.com/playlist?list=PLUMGF3D982PrRjmzCv3ZZQZcfGAZRYCf1', '_blank');
 
-        // Floating theme toggle inside editor
-        const themeBtn = document.createElement('button');
-        themeBtn.id = 'themeBtn';
-        themeBtn.className = 'cm-theme-toggle';
-        cmWrapper.style.position = 'relative';
-        cmWrapper.appendChild(themeBtn);
+        // Theme toggle inside toolbar
+        const themeBtn = editorSection.querySelector('#themeBtn');
 
         const sunIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
         const moonIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
         function updateThemeBtn(dark) {
             themeBtn.innerHTML = dark ? sunIcon : moonIcon;
-            themeBtn.title = dark ? 'Chuyển sang sáng' : 'Chuyển sang tối';
+            themeBtn.title = dark ? 'Giao diện nền sáng' : 'Giao diện nền tối';
+            themeBtn.dataset.tooltip = themeBtn.title; // Update the custom tooltip
             cmWrapper.classList.toggle('cm-light-mode', !dark);
         }
         updateThemeBtn(isDark);
@@ -1480,10 +1480,12 @@
         badge.id = 'cptit-homepage-streak';
         badge.className = 'cptit-homepage-streak';
 
+        const flameSvg = '<svg class="streak-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+
         if (streak > 0) {
-            badge.innerHTML = `<span class="cptit-streak-badge active-streak">🔥 <span class="streak-text">${streak} ngày liên tiếp</span></span>`;
+            badge.innerHTML = `<span class="cptit-streak-badge active-streak">${flameSvg} <span class="streak-text">${streak} ngày liên tiếp</span></span>`;
         } else {
-            badge.innerHTML = `<span class="cptit-streak-badge cptit-streak-zero"><span class="streak-text">Hãy bắt đầu streak hôm nay! 💪</span></span>`;
+            badge.innerHTML = `<span class="cptit-streak-badge cptit-streak-zero"><span class="streak-text">Hãy bắt đầu streak hôm nay!</span></span>`;
         }
 
         // Inject into page
@@ -1504,7 +1506,7 @@
                     titleWrapper.style.display = 'flex';
                     titleWrapper.style.alignItems = 'center';
                     titleWrapper.style.gap = '12px';
-                    
+
                     topNav.insertBefore(titleWrapper, title);
                     titleWrapper.appendChild(title);
                     titleWrapper.appendChild(badge);
@@ -1522,17 +1524,17 @@
                 wrapper.style.alignItems = 'center';
                 wrapper.style.justifyContent = 'flex-start';
                 wrapper.style.gap = '12px';
-                
+
                 header.parentNode.insertBefore(wrapper, header);
                 header.style.marginBottom = '0'; // reset margin since we use wrapper
-                
+
                 wrapper.appendChild(header);
                 wrapper.appendChild(badge);
             } else if (header && header.parentElement.classList.contains('cptit-header-wrapper')) {
                 // If wrapper already exists, just append/replace badge
                 const existingBadge = document.getElementById('cptit-homepage-streak');
                 if (!existingBadge) {
-                     header.parentElement.appendChild(badge);
+                    header.parentElement.appendChild(badge);
                 }
             }
         }
@@ -1553,11 +1555,13 @@
         const headerDiv = document.createElement('div');
         headerDiv.className = 'cptit-heatmap-header';
 
+        const flameSvg = '<svg class="streak-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+        
         let streakHTML = '';
         if (currentStreak > 0) {
-            streakHTML = `<span class="cptit-streak-badge active-streak">🔥 <span class="streak-text">${currentStreak} ngày liên tiếp</span></span>`;
+            streakHTML = `<span class="cptit-streak-badge active-streak">${flameSvg} <span class="streak-text">${currentStreak} ngày liên tiếp</span></span>`;
         } else {
-            streakHTML = `<span class="cptit-streak-badge cptit-streak-zero"><span class="streak-text">Hãy bắt đầu streak hôm nay! 💪</span></span>`;
+            streakHTML = `<span class="cptit-streak-badge cptit-streak-zero"><span class="streak-text">Hãy bắt đầu streak hôm nay!</span></span>`;
         }
 
         headerDiv.innerHTML = `
@@ -1800,7 +1804,7 @@
                 // Ensure the left filter box doesn't push things weirdly
                 const leftBox = bottomNav.querySelector('.ques__nav__filter');
                 if (leftBox) {
-                     leftBox.style.marginRight = 'auto'; // Force right alignment for toggle
+                    leftBox.style.marginRight = 'auto'; // Force right alignment for toggle
                 }
 
                 toggleContainer.style.display = 'inline-flex';

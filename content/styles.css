@@ -200,45 +200,6 @@
     background: rgba(0, 0, 0, 0.25);
 }
 
-/* --- Theme Toggle Button --- */
-
-.cm-theme-toggle {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 7px;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--cptit-transition);
-    line-height: 0;
-    backdrop-filter: blur(4px);
-}
-
-.cm-theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-    transform: scale(1.05);
-}
-
-#cm-editor-wrapper.cm-light-mode .cm-theme-toggle {
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.06);
-    color: rgba(0, 0, 0, 0.35);
-}
-
-#cm-editor-wrapper.cm-light-mode .cm-theme-toggle:hover {
-    background: rgba(0, 0, 0, 0.07);
-    color: rgba(0, 0, 0, 0.7);
-    transform: scale(1.05);
-}
-
 /* ============================================================
    2. EDITOR TOOLBAR & BUTTONS
    ============================================================ */
@@ -843,14 +804,12 @@
 
 /* Shared tooltip base for all icon buttons */
 .title-action-btn,
-.editor-icon-btn,
-.cm-theme-toggle {
+.editor-icon-btn {
     position: relative;
 }
 
 .title-action-btn::after,
-.editor-icon-btn::after,
-.cm-theme-toggle::after {
+.editor-icon-btn::after {
     content: attr(data-tooltip);
     position: absolute;
     bottom: calc(100% + 6px);
@@ -875,8 +834,7 @@
 }
 
 .title-action-btn:hover::after,
-.editor-icon-btn:hover::after,
-.cm-theme-toggle:hover::after {
+.editor-icon-btn:hover::after {
     opacity: 1;
     transform: translateX(-50%) scale(1);
 }
@@ -896,8 +854,7 @@
 
 /* Arrow pointing down */
 .title-action-btn::before,
-.editor-icon-btn::before,
-.cm-theme-toggle::before {
+.editor-icon-btn::before {
     content: '';
     position: absolute;
     bottom: calc(100% + 1px);
@@ -912,8 +869,7 @@
 }
 
 .title-action-btn:hover::before,
-.editor-icon-btn:hover::before,
-.cm-theme-toggle:hover::before {
+.editor-icon-btn:hover::before {
     opacity: 1;
 }
 
@@ -1077,4 +1033,14 @@
     0% { box-shadow: 0 0 0 0 rgba(167, 69, 60, 0.4); }
     70% { box-shadow: 0 0 0 4px rgba(167, 69, 60, 0); }
     100% { box-shadow: 0 0 0 0 rgba(167, 69, 60, 0); }
+}
+
+.cptit-streak-badge.active-streak .streak-icon {
+    animation: cptit-streak-flame 2s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes cptit-streak-flame {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.15) translateY(-1px); }
 }
