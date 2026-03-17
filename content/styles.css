@@ -839,14 +839,14 @@
     transform: translateX(-50%) scale(1);
 }
 
-/* Editor toolbar buttons are near the right edge — anchor tooltips from right */
+/* Editor toolbar buttons are near the left edge — anchor tooltips from left to extend right */
 .editor-icon-btn::after {
-    left: auto;
-    right: 0;
-    transform: translateX(0) scale(0.9);
+    left: 0;
+    right: auto;
+    transform: scale(0.9);
 }
 .editor-icon-btn:hover::after {
-    transform: translateX(0) scale(1);
+    transform: scale(1);
 }
 .editor-icon-btn::before {
     left: 50%;
