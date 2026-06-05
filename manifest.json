@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "codePTIT - Tiện ích hỗ trợ làm bài code.PTIT",
-  "version": "0.5.4",
-  "description": "Tiện ích mở rộng giúp sinh viên PTIT tối ưu hóa giao diện, tích hợp trình soạn thảo mã nguồn và tự động hóa thao tác trên hệ thống code.ptit.edu.vn.",
+  "version": "0.5.5",
+  "description": "Tiện ích mở rộng giúp sinh viên PTIT tối ưu giao diện, tích hợp trình soạn thảo và tự động hóa thao tác trên code.ptit.edu.vn.",
   "permissions": [
     "clipboardRead",
     "clipboardWrite",
